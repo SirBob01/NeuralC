@@ -61,6 +61,7 @@ for(int i = 0; i < passes; i++) {
 
 7. Free all allocated memory and close subsystems.
 ```c
+free(data);
 Neural_network_destroy(net); // Don't allow memory leaks!
 Neural_quit();
 ```
