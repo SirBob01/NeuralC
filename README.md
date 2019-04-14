@@ -48,7 +48,7 @@ int population = 100; // 100 training examples
 NeuralDataSet *data = malloc(sizeof(NeuralDataSet) * population);
 ```
 
-6. Train your neural network on the dataset.
+6. Train your neural network on the dataset. Note that the population must be divisible by the batch size.
 ```c
 int batch_size = 5; // Train network with 5 examples at a time
 int passes = 1000; // Iterate over training set 1000 times
