@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "Neural_activations.h"
 #include "Neural_matrix.h"
+#include "Neural_activations.h"
 #include "Neural_utils.h"
 #include "Neural_error.h"
 
@@ -43,6 +43,6 @@ NeuralMatrix *Neural_network_forward(NeuralNetwork *n, double *inputs);
 
 void Neural_network_backward(NeuralNetwork *n, double *expected);
 
-void *Neural_network_train(NeuralNetwork *n, NeuralDataSet *population, int population_size, int batch_size, double learning_rate);
+void Neural_network_train(NeuralNetwork *n, NeuralDataSet *population, int population_size, int batch_size, double learning_rate);
 
 #endif

@@ -3,10 +3,12 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
-#define __Neural_Status_Message_Length 100
-#define __Neural_Status_Message_Padding 10
+#define _Neural_Error_Message_Buffer 100
+#define _Neural_Error_Message_Padding 10
 
 typedef enum {
 	SUCCESS,
@@ -24,14 +26,24 @@ typedef enum {
 	INVALID_ERROR_MESSAGE
 } NeuralError;
 
-NeuralError __Neural_Status; // Default success
-char __Neural_Status_Message[__Neural_Status_Message_Length];
+typedef struct {
+	int max_length;
+	int current_length;
+	NeuralError *log;
+} NeuralErrorLog;
+
+NeuralErrorLog *_Neural_Error_Log;
+char _Neural_Error_Message[_Neural_Error_Message_Buffer];
 
 
-void Neural_set_status(NeuralError status);
+NeuralErrorLog *Neural_error_init(void);
 
-void Neural_format_status_message(const char *format, int length, ...);
+void Neural_error_quit(void);
 
-const char *Neural_get_status(void);
+void *Neural_error_message_format(const char *format, int length, ...);
+
+char *Neural_error_get(void);
+
+void Neural_error_set(NeuralError error);
 
 #endif

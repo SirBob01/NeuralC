@@ -30,5 +30,7 @@ NeuralMatrix *Neural_convolve(NeuralMatrix *channel, const double **kernel) {
 	NeuralMatrix *result = Neural_matrix(NULL, channel->rows, channel->cols);
 	NeuralMatrix *t = Neural_matrix(NULL, sizeof(kernel[0]), sizeof(kernel[0]));
 	NeuralMatrix *k = Neural_matrix((double *)kernel, sizeof(kernel[0]), sizeof(kernel[0]));
+
+	// TODO: Implement feature parsing engine
 	return result;
 }

@@ -2,14 +2,14 @@
 
 NeuralMatrix *Neural_matrix(double *values, int rows, int cols) {
 	NeuralMatrix *m = malloc(sizeof(NeuralMatrix));
-	if(m == NULL) {
-		Neural_set_status(NO_MATRIX_MEMORY);
+	if(!m) {
+		Neural_error_set(NO_MATRIX_MEMORY);
 		return NULL;
 	}
 
 	m->cells = malloc(sizeof(double) * rows * cols);
-	if(m->cells == NULL) {
-		Neural_set_status(NO_MATRIX_MEMORY);
+	if(!m->cells) {
+		Neural_error_set(NO_MATRIX_MEMORY);
 		return NULL;
 	}
 
@@ -17,7 +17,7 @@ NeuralMatrix *Neural_matrix(double *values, int rows, int cols) {
 	m->cols = cols;
 
 	// Default 0 matrix
-	if(values == NULL) {
+	if(!values) {
 		for(int i = 0; i < rows * cols; ++i) {
 			m->cells[i] = 0.0;
 		}
@@ -36,7 +36,7 @@ NeuralMatrix *Neural_matrix_clone(NeuralMatrix *m) {
 
 NeuralMatrix *Neural_matrix_diagonal(double *values, int n) {
 	NeuralMatrix *m = Neural_matrix(NULL, n, n);
-	if(m == NULL) {
+	if(!m) {
 		return NULL;
 	}
 
@@ -49,7 +49,7 @@ NeuralMatrix *Neural_matrix_diagonal(double *values, int n) {
 
 NeuralMatrix *Neural_matrix_get_diagonal(NeuralMatrix *m) {
 	NeuralMatrix *n = Neural_matrix(NULL, 1, m->cols);
-	if(n == NULL) {
+	if(!n) {
 		return NULL;
 	}
 
@@ -60,28 +60,35 @@ NeuralMatrix *Neural_matrix_get_diagonal(NeuralMatrix *m) {
 	return n;
 }
 
-void *Neural_matrix_resize(NeuralMatrix *m, int rows, int cols) {
+NeuralMatrix *Neural_matrix_resize(NeuralMatrix *m, int rows, int cols) {
 	if(m->rows == rows && m->cols == cols) {
-		return NULL;
+		return m;
 	}
 
 	m->rows = rows;
 	m->cols = cols;
 	m->cells = realloc(m->cells, sizeof(double) * rows * cols);
+	if(!m->cells) {
+		Neural_error_set(NO_MATRIX_MEMORY);
+		return NULL;
+	}
+	else {
+		return m;
+	}
 }
 
-void *Neural_matrix_map(NeuralMatrix *m, double *values) {
+void Neural_matrix_map(NeuralMatrix *m, double *values) {
 	memcpy(m->cells, values, sizeof(double) * m->rows * m->cols);
 }
 
-void *Neural_matrix_copy(NeuralMatrix *target, NeuralMatrix *source) {
+void Neural_matrix_copy(NeuralMatrix *target, NeuralMatrix *source) {
 	// Does not create new NeuralMatrix object
 	// Reuses memory block to prevent heap fragmentation
 	Neural_matrix_resize(target, source->rows, source->cols);
 	Neural_matrix_map(target, source->cells);
 }
 
-void *Neural_matrix_destroy(NeuralMatrix *m) {
+void Neural_matrix_destroy(NeuralMatrix *m) {
 	free(m->cells);	
 	free(m);
 	m = NULL;
@@ -89,7 +96,7 @@ void *Neural_matrix_destroy(NeuralMatrix *m) {
 
 double Neural_matrix_get_at(NeuralMatrix *m, int row, int col) {
 	if(!Neural_matrix_within_bounds(m, row, col)) {
-		Neural_set_status(MATRIX_OUT_BOUNDS);
+		Neural_error_set(MATRIX_OUT_BOUNDS);
 	}
 
 	return m->cells[row * m->cols + col];
@@ -97,62 +104,68 @@ double Neural_matrix_get_at(NeuralMatrix *m, int row, int col) {
 
 void *Neural_matrix_set_at(NeuralMatrix *m, double value, int row, int col) {
 	if(!Neural_matrix_within_bounds(m, row, col)) {
-		Neural_set_status(MATRIX_OUT_BOUNDS);
-		return NULL;
+		Neural_error_set(MATRIX_OUT_BOUNDS);
+		return NULL; // Prevent buffer overflow
 	}
 
 	m->cells[row * m->cols + col] = value;
 }
 
-void *Neural_matrix_scale(NeuralMatrix *m, double s) {
+void Neural_matrix_scale(NeuralMatrix *m, double s) {
 	for(int i = 0; i < m->rows * m->cols; ++i) {
 		m->cells[i] *= s;
 	}
 }
 
-void *Neural_matrix_add(NeuralMatrix *a, NeuralMatrix *b) {
+NeuralMatrix *Neural_matrix_add(NeuralMatrix *a, NeuralMatrix *b) {
 	if(!Neural_matrix_equal_dimensions(a, b)) {
-		Neural_set_status(INVALID_MATRIX_ADDITION);
+		Neural_error_set(INVALID_MATRIX_ADDITION);
 		return NULL;
 	}
 
 	for(int i = 0; i < a->rows * a->cols; ++i) {
 		a->cells[i] += b->cells[i];
 	}
+
+	return a;
 }
 
-void *Neural_matrix_subtract(NeuralMatrix *a, NeuralMatrix *b) {
+NeuralMatrix *Neural_matrix_subtract(NeuralMatrix *a, NeuralMatrix *b) {
 	if(!Neural_matrix_equal_dimensions(a, b)) {
-		Neural_set_status(INVALID_MATRIX_SUBTRACTION);
+		Neural_error_set(INVALID_MATRIX_SUBTRACTION);
 		return NULL;
 	}
 
 	for(int i = 0; i < a->rows * a->cols; ++i) {
 		a->cells[i] -= b->cells[i];
 	}
+
+	return a;
 }
 
-void *Neural_matrix_hadamard(NeuralMatrix *a, NeuralMatrix *b) {
+NeuralMatrix *Neural_matrix_hadamard(NeuralMatrix *a, NeuralMatrix *b) {
 	if(!Neural_matrix_equal_dimensions(a, b)) {
-		Neural_set_status(INVALID_MATRIX_HADAMARD);
+		Neural_error_set(INVALID_MATRIX_HADAMARD);
 		return NULL;
 	}
 
 	for(int i = 0; i < a->rows * a->cols; ++i) {
 		a->cells[i] *= b->cells[i];
 	}
+
+	return a;
 }
 
-void *Neural_matrix_multiply(NeuralMatrix *a, NeuralMatrix *b) {
+NeuralMatrix *Neural_matrix_multiply(NeuralMatrix *a, NeuralMatrix *b) {
 	if(a->cols != b->rows) {
-		Neural_set_status(INVALID_MATRIX_MULTIPLICATION);
+		Neural_error_set(INVALID_MATRIX_MULTIPLICATION);
 		return NULL;
 	}
 
 	// Sad naive implementation :(
 	double *target = malloc(sizeof(double) * a->rows * b->cols);
-	if(target == NULL) {
-		Neural_set_status(NO_MATRIX_MEMORY);
+	if(!target) {
+		Neural_error_set(NO_MATRIX_MEMORY);
 		return NULL;
 	}
 
@@ -169,6 +182,7 @@ void *Neural_matrix_multiply(NeuralMatrix *a, NeuralMatrix *b) {
 	Neural_matrix_resize(a, a->rows, b->cols);
 	Neural_matrix_map(a, target);
 	free(target);
+	return a;
 }
 
 void Neural_matrix_transpose(NeuralMatrix *m) {
@@ -183,7 +197,7 @@ void Neural_matrix_transpose(NeuralMatrix *m) {
 	Neural_matrix_map(m, translate);
 }
 
-double Neural_matrix_element_sum(NeuralMatrix *m) {
+double Neural_matrix_sum(NeuralMatrix *m) {
 	double sum = 0;
 	for(int i = 0; i < m->rows * m->cols; i++) {
 		sum += m->cells[i];
@@ -192,7 +206,15 @@ double Neural_matrix_element_sum(NeuralMatrix *m) {
 	return sum;
 }
 
-int Neural_matrix_within_bounds(NeuralMatrix *m, int row, int col) {
+double Neural_matrix_dot(NeuralMatrix *a, NeuralMatrix *b) {
+	NeuralMatrix *sum = Neural_matrix_clone(a);
+	Neural_matrix_hadamard(sum, b);
+	double dot_product = Neural_matrix_sum(sum);
+	Neural_matrix_destroy(sum);
+	return dot_product;
+}
+
+short Neural_matrix_within_bounds(NeuralMatrix *m, int row, int col) {
 	int hor = 1;
 	int ver = 1;
 	if(row < 0 || row > m->rows-1) {
@@ -205,7 +227,7 @@ int Neural_matrix_within_bounds(NeuralMatrix *m, int row, int col) {
 	return hor && ver;
 }
 
-int Neural_matrix_equal_dimensions(NeuralMatrix *a, NeuralMatrix *b) {
+short Neural_matrix_equal_dimensions(NeuralMatrix *a, NeuralMatrix *b) {
 	return (a->rows == b->rows) && (a->cols == b->cols);
 }
 

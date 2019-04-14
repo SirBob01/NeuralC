@@ -2,9 +2,8 @@
 
 NeuralNetwork *Neural_network(NeuralLayer *layers, int n, int normalize, double (*cost_function)(double, double, int)) {	
 	NeuralNetwork *net = malloc(sizeof(NeuralNetwork));
-	if(net == NULL) {
-		Neural_set_status(NO_NETWORK_MEMORY);
-		return NULL;
+	if(!net) {
+		Neural_error_set(NO_NETWORK_MEMORY);
 	}
 
 	net->structure = layers;
@@ -18,12 +17,11 @@ NeuralNetwork *Neural_network(NeuralLayer *layers, int n, int normalize, double 
 
 	net->delta_w = malloc(sizeof(NeuralMatrix *) * (n-1));
 	net->delta_b = malloc(sizeof(NeuralMatrix *) * (n-1));
-	if(net->states == NULL || net->weights == NULL || net->biases == NULL || net->delta_w == NULL || net->delta_b == NULL) {
-		Neural_set_status(NO_NETWORK_MEMORY);
-		return NULL;
+
+	if(!(net->states && net->weights && net->biases && net->delta_w && net->delta_b)) {
+		Neural_error_set(NO_NETWORK_MEMORY);
 	}
 
-	srand(time(NULL));
 	for(int i = 0; i < n; ++i) {
 		net->states[i] = Neural_matrix(NULL, 1, layers[i].nodes);
 
@@ -36,7 +34,7 @@ NeuralNetwork *Neural_network(NeuralLayer *layers, int n, int normalize, double 
 
 			// Randomize weights (-1, 1)
 			for(int j = 0; j < layers[i].nodes * layers[i+1].nodes; ++j) {
-				net->weights[i]->cells[j] = ((rand()/(double)RAND_MAX)*2)-1;
+				net->weights[i]->cells[j] = (Neural_utils_random()*2)-1;
 			}
 		}
 	}
@@ -99,7 +97,7 @@ NeuralMatrix *Neural_network_forward(NeuralNetwork *n, double *inputs) {
 
 	if(n->normalize) {
 		// Normalize output for multi-classification problems
-		target = Neural_softmax(n->states[n->layers-1], 0);
+		target = Neural_activation_softmax(n->states[n->layers-1], 0);
 		Neural_matrix_copy(n->states[n->layers-1], target);
 		Neural_matrix_destroy(target);
 	}
@@ -125,7 +123,7 @@ void Neural_network_backward(NeuralNetwork *n, double *expected) {
 		Neural_matrix_copy(p_delta, n->states[i-1]);
 
 		if(i == n->layers-1 && n->normalize) {
-			NeuralMatrix *norm = Neural_softmax(a_delta, 1);
+			NeuralMatrix *norm = Neural_activation_softmax(a_delta, 1);
 			Neural_matrix_copy(a_delta, norm);
 			Neural_matrix_destroy(norm);
 		}
@@ -156,13 +154,12 @@ void Neural_network_backward(NeuralNetwork *n, double *expected) {
 	Neural_matrix_destroy(w_delta);
 }
 
-void *Neural_network_train(NeuralNetwork *n, NeuralDataSet *population, int population_size, int batch_size, double learning_rate) {
+void Neural_network_train(NeuralNetwork *n, NeuralDataSet *population, int population_size, int batch_size, double learning_rate) {
 	if(population_size % batch_size != 0) {
-		Neural_set_status(INVALID_BATCH_SIZE);
-		return NULL;
+		Neural_error_set(INVALID_BATCH_SIZE);
 	}
 
-	Neural_shuffle(population, population_size, sizeof(NeuralDataSet));
+	Neural_utils_shuffle(population, population_size, sizeof(NeuralDataSet));
 
 	NeuralMatrix **batch_delta_w = malloc(sizeof(NeuralMatrix *) * (n->layers - 1));
 	NeuralMatrix **batch_delta_b = malloc(sizeof(NeuralMatrix *) * (n->layers - 1));

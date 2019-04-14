@@ -1,6 +1,74 @@
 # NeuralC
 
-A C library for implementing deep feed-forward neural networks (DFF). Intended to work on low level systems.
+A lightweight, standalone C library for implementing deep feed-forward neural networks (DFF). It features:
+
+- Generalized backpropagation algorithm
+- Custom activation and cost-functions with hyperparameters
+- Feature-rich (independent) matrix library
+
+This is mostly a learning exercise intended to work on low level systems (i.e. Arduino).
+
+# Dependencies
+
+None. This is written in pure C using OS independent library functions. :)
+
+# Basic Usage
+
+1. Include the `Neural.h` header.
+```c
+#include <Neural.h>
+```
+
+2. Initialize the library's subsystems.
+```c
+Neural_init();
+```
+
+3. Create the structure of your network using an array of `NeuralLayers`, indicating the number of nodes per layer and their activation functions. Don't forget to set the hyperparameters of special activation functions like `Neural_activation_prelu`.
+```c
+// Initialize hyperparameters
+HYPERPARAM_PRELU = 0.05;
+
+NeuralLayer layers[3] = {
+		{1, Neural_activation_identity},
+		{5, Neural_activation_prelu},
+		{1, Neural_activation_identity}
+};
+```
+
+4. Generate your neural network, indicating the number of layers, the cost function, and whether or not to normalize the output with a softmax.
+```c
+// Layer array, number of layers, softmax normalize, cost function
+NeuralNetwork *net = Neural_network(layers, 3, 0, Neural_cost_quadratic);
+```
+
+5. Load your dataset into an array of `NeuralDataSet` structures {input, desired output}.
+```c
+int population = 10; // 10 training examples
+NeuralDataSet *data = malloc(sizeof(NeuralDataSet) * population);
+```
+
+6. Train your neural network on the dataset.
+```c
+int batch_size = 3; // Train network with 3 examples at a time
+int passes = 1000; // Iterate over training set 1000 times
+double l_rate = 0.005; // Learning rate hyperparameter
+
+for(int i = 0; i < passes; i++) {
+    Neural_network_train(net, data, population, batch_size, l_rate);
+}
+```
+
+7. Free all allocated memory and close subsystems.
+```c
+Neural_network_destroy(net); // Don't allow memory leaks!
+Neural_quit();
+```
+
+Read `NeuralC` doc-strings and comments for more information (especially on error handling and logging).
 
 # TODO
-- Implement stochastic and mini-batch algorithms for more optimized gradient descent
+
+- Implement feature parsing engine for convolutional networks
+- Read and write neural networks (and matrices) to disk
+- Improve error handling
