@@ -44,13 +44,13 @@ NeuralNetwork *net = Neural_network(layers, 3, 0, Neural_cost_quadratic);
 
 5. Load your dataset into an array of `NeuralDataSet` structures {input, desired output}.
 ```c
-int population = 10; // 10 training examples
+int population = 100; // 100 training examples
 NeuralDataSet *data = malloc(sizeof(NeuralDataSet) * population);
 ```
 
 6. Train your neural network on the dataset.
 ```c
-int batch_size = 3; // Train network with 3 examples at a time
+int batch_size = 5; // Train network with 5 examples at a time
 int passes = 1000; // Iterate over training set 1000 times
 double l_rate = 0.005; // Learning rate hyperparameter
 
