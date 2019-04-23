@@ -1,4 +1,4 @@
-# <img src="./branding/logo.svg" alt="NeuralC" width="500"/>
+<img src="./media/logo.png" alt="NeuralC" width="500"/>
 
 A lightweight, standalone C library for implementing deep feed-forward neural networks (DFF). It features:
 
