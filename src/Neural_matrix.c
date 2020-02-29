@@ -91,7 +91,6 @@ void Neural_matrix_copy(NeuralMatrix *target, NeuralMatrix *source) {
 void Neural_matrix_destroy(NeuralMatrix *m) {
 	free(m->cells);	
 	free(m);
-	m = NULL;
 }
 
 double Neural_matrix_get_at(NeuralMatrix *m, int row, int col) {

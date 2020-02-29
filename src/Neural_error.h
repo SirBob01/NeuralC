@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <assert.h>
 
 #define _NEURAL_ERROR_MESSAGE_BUFFER 100
 #define _NEURAL_ERROR_MESSAGE_PADDING 10
@@ -32,15 +33,15 @@ typedef struct {
 	NeuralError *log;
 } NeuralErrorLog;
 
-NeuralErrorLog *_Neural_Error_Log;
-char _Neural_Error_Message[_NEURAL_ERROR_MESSAGE_BUFFER];
+static NeuralErrorLog _Neural_Error_Log;
+static char _Neural_Error_Message[_NEURAL_ERROR_MESSAGE_BUFFER];
 
 
-NeuralErrorLog *Neural_error_init(void);
+void Neural_error_init(void);
 
 void Neural_error_quit(void);
 
-void *Neural_error_message_format(const char *format, int length, ...);
+void *Neural_error_message_format(const char *format, ...);
 
 char *Neural_error_get(void);
 

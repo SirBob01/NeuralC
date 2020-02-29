@@ -14,21 +14,21 @@ int main() {
 	NeuralLayer layers[5] = {
 		{1, Neural_activation_identity},
 		{5, Neural_activation_prelu},
-		{10, Neural_activation_prelu},
 		{5, Neural_activation_prelu},
 		{1, Neural_activation_identity}
 	};
 
+	// Initialize network
 	NeuralNetwork *net = Neural_network(layers, 5, 0, Neural_cost_quadratic);
 	
 	// Initialize dataset
-	NeuralDataSet *data = malloc(sizeof(NeuralDataSet) * population_size);
+	NeuralDataPair *pairs = malloc(sizeof(NeuralDataPair) * population_size);
 	for(int i = 0; i < population_size; i++) {
-		data[i].inputs = malloc(sizeof(double));
-		data[i].expected = malloc(sizeof(double));
+		pairs[i] = Neural_data_pair(1, 1);
 
-		data[i].inputs[0] = ((i+1)*pi/180.0)/(2*pi);
-		data[i].expected[0] = sin((i+1)*pi/180.0);
+		// Set value map input -> expected
+		pairs[i].inputs[0] = ((i+1)*pi/180.0)/(2*pi);
+		pairs[i].expected[0] = sin((i+1)*pi/180.0);
 	}
 	
 	double test_data[3][1] = {{(pi/6)/(2*pi)}, 
@@ -44,8 +44,8 @@ int main() {
 	
 	printf("\nTRAINING...\n");
 
-	for(int i = 0; i < 1000000; ++i) {
-		Neural_network_train(net, data, population_size, batch_size, 0.005);
+	for(int i = 0; i < 1000; ++i) {
+		Neural_network_train(net, pairs, population_size, batch_size, 0.005);
 	}
 
 	printf("\nFINAL:\n");

@@ -12,7 +12,10 @@
 typedef struct {
 	double *inputs;
 	double *expected;
-} NeuralDataSet;
+
+	int len_inputs;
+	int len_expected;
+} NeuralDataPair;
 
 typedef struct {
 	int nodes;
@@ -35,6 +38,8 @@ typedef struct {
 } NeuralNetwork;
 
 
+NeuralDataPair Neural_data_pair(int inputs, int outputs);
+
 NeuralNetwork *Neural_network(
 	NeuralLayer *layers, int n, NeuralBool normalize, 
 	double (*cost_function)(double, double, NeuralBool)
@@ -47,7 +52,7 @@ NeuralMatrix *Neural_network_forward(NeuralNetwork *n, double *inputs);
 void Neural_network_backward(NeuralNetwork *n, double *expected);
 
 void Neural_network_train(
-	NeuralNetwork *n, NeuralDataSet *population, 
+	NeuralNetwork *n, NeuralDataPair *population, 
 	int population_size, int batch_size, double learning_rate
 );
 

@@ -1,5 +1,15 @@
 #include "Neural_network.h"
 
+NeuralDataPair Neural_data_pair(int len_inputs, int len_expected) {
+	NeuralDataPair n;
+	n.len_inputs = len_inputs;
+	n.len_expected = len_expected;
+
+	n.inputs = calloc(n.len_inputs, sizeof(double));
+	n.expected = calloc(n.len_expected, sizeof(double));
+	return n;
+}
+
 NeuralNetwork *Neural_network(
 					NeuralLayer *layers, int n, NeuralBool normalize, 
 					double (*cost_function)(double, double, NeuralBool)) {	
@@ -69,7 +79,6 @@ void Neural_network_destroy(NeuralNetwork *n) {
 	free(n->delta_b);
 
 	free(n);
-	n = NULL;
 }
 
 NeuralMatrix *Neural_network_forward(NeuralNetwork *n, double *inputs) {
@@ -161,13 +170,13 @@ void Neural_network_backward(NeuralNetwork *n, double *expected) {
 }
 
 void Neural_network_train(
-			NeuralNetwork *n, NeuralDataSet *population, 
+			NeuralNetwork *n, NeuralDataPair *population, 
 			int population_size, int batch_size, double learning_rate) {
 	if(population_size % batch_size != 0) {
 		Neural_error_set(INVALID_BATCH_SIZE);
 	}
 
-	Neural_utils_shuffle(population, population_size, sizeof(NeuralDataSet));
+	Neural_utils_shuffle(population, population_size, sizeof(NeuralDataPair));
 
 	NeuralMatrix **batch_delta_w = malloc(sizeof(NeuralMatrix *) * (n->layers - 1));
 	NeuralMatrix **batch_delta_b = malloc(sizeof(NeuralMatrix *) * (n->layers - 1));
