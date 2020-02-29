@@ -7,8 +7,8 @@
 #include <string.h>
 #include <time.h>
 
-#define _Neural_Error_Message_Buffer 100
-#define _Neural_Error_Message_Padding 10
+#define _NEURAL_ERROR_MESSAGE_BUFFER 100
+#define _NEURAL_ERROR_MESSAGE_PADDING 10
 
 typedef enum {
 	SUCCESS,
@@ -33,7 +33,7 @@ typedef struct {
 } NeuralErrorLog;
 
 NeuralErrorLog *_Neural_Error_Log;
-char _Neural_Error_Message[_Neural_Error_Message_Buffer];
+char _Neural_Error_Message[_NEURAL_ERROR_MESSAGE_BUFFER];
 
 
 NeuralErrorLog *Neural_error_init(void);

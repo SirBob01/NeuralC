@@ -16,13 +16,13 @@ typedef struct {
 
 typedef struct {
 	int nodes;
-	double (*activation)(double x, int derivative);
+	double (*activation)(double x, NeuralBool derivative);
 } NeuralLayer;
 
 typedef struct {
 	NeuralLayer *structure;
 	int layers;
-	double (*cost)(double output, double expected, int derivative);
+	double (*cost)(double output, double expected, NeuralBool derivative);
 
 	NeuralMatrix **states;
 	NeuralMatrix **weights;
@@ -31,11 +31,14 @@ typedef struct {
 	NeuralMatrix **delta_w;
 	NeuralMatrix **delta_b;
 
-	int normalize;
+	NeuralBool normalize;
 } NeuralNetwork;
 
 
-NeuralNetwork *Neural_network(NeuralLayer *layers, int n, int normalize, double (*cost_function)(double output, double expected, int derivative));
+NeuralNetwork *Neural_network(
+	NeuralLayer *layers, int n, NeuralBool normalize, 
+	double (*cost_function)(double, double, NeuralBool)
+);
 
 void Neural_network_destroy(NeuralNetwork *n);
 
@@ -43,6 +46,9 @@ NeuralMatrix *Neural_network_forward(NeuralNetwork *n, double *inputs);
 
 void Neural_network_backward(NeuralNetwork *n, double *expected);
 
-void Neural_network_train(NeuralNetwork *n, NeuralDataSet *population, int population_size, int batch_size, double learning_rate);
+void Neural_network_train(
+	NeuralNetwork *n, NeuralDataSet *population, 
+	int population_size, int batch_size, double learning_rate
+);
 
 #endif

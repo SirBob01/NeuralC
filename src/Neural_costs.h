@@ -3,10 +3,12 @@
 
 #include <math.h>
 
-double Neural_cost_quadratic(double output, double expected, int derivative);
+#include "Neural_utils.h"
 
-double Neural_cost_cross_entropy(double output, double expected, int derivative);
+double Neural_cost_quadratic(double output, double expected, NeuralBool derivative);
 
-double Neural_cost_exponential(double output, double expected, int derivative);
+double Neural_cost_cross_entropy(double output, double expected, NeuralBool derivative);
+
+double Neural_cost_exponential(double output, double expected, NeuralBool derivative);
 
 #endif

@@ -173,7 +173,8 @@ NeuralMatrix *Neural_matrix_multiply(NeuralMatrix *a, NeuralMatrix *b) {
 		for(int j = 0; j < b->cols; ++j) {
 			double dot = 0.0;
 			for(int c = 0; c < a->cols; ++c) {
-				dot += Neural_matrix_get_at(a, i, c) * Neural_matrix_get_at(b, c, j);
+				dot += Neural_matrix_get_at(a, i, c) * 
+					   Neural_matrix_get_at(b, c, j);
 			}
 			target[i * b->cols + j] = dot;
 		}

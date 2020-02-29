@@ -1,6 +1,8 @@
 #include "Neural_network.h"
 
-NeuralNetwork *Neural_network(NeuralLayer *layers, int n, int normalize, double (*cost_function)(double, double, int)) {	
+NeuralNetwork *Neural_network(
+					NeuralLayer *layers, int n, NeuralBool normalize, 
+					double (*cost_function)(double, double, NeuralBool)) {	
 	NeuralNetwork *net = malloc(sizeof(NeuralNetwork));
 	if(!net) {
 		Neural_error_set(NO_NETWORK_MEMORY);
@@ -18,7 +20,11 @@ NeuralNetwork *Neural_network(NeuralLayer *layers, int n, int normalize, double 
 	net->delta_w = malloc(sizeof(NeuralMatrix *) * (n-1));
 	net->delta_b = malloc(sizeof(NeuralMatrix *) * (n-1));
 
-	if(!(net->states && net->weights && net->biases && net->delta_w && net->delta_b)) {
+	if(!net->states || 
+	   !net->weights || 
+	   !net->biases || 
+	   !net->delta_w || 
+	   !net->delta_b) {
 		Neural_error_set(NO_NETWORK_MEMORY);
 	}
 
@@ -154,7 +160,9 @@ void Neural_network_backward(NeuralNetwork *n, double *expected) {
 	Neural_matrix_destroy(w_delta);
 }
 
-void Neural_network_train(NeuralNetwork *n, NeuralDataSet *population, int population_size, int batch_size, double learning_rate) {
+void Neural_network_train(
+			NeuralNetwork *n, NeuralDataSet *population, 
+			int population_size, int batch_size, double learning_rate) {
 	if(population_size % batch_size != 0) {
 		Neural_error_set(INVALID_BATCH_SIZE);
 	}

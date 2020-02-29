@@ -1,6 +1,6 @@
 #include "Neural_activations.h"
 
-double Neural_activation_identity(double x, int derivative) {
+double Neural_activation_identity(double x, NeuralBool derivative) {
 	if(!derivative) {
 		return x;
 	}
@@ -9,7 +9,7 @@ double Neural_activation_identity(double x, int derivative) {
 	}
 }
 
-double Neural_activation_relu(double x, int derivative) {
+double Neural_activation_relu(double x, NeuralBool derivative) {
 	double y = Neural_utils_max(x, 0);
 	if(!derivative) {
 		return y;
@@ -19,7 +19,7 @@ double Neural_activation_relu(double x, int derivative) {
 	}
 }
 
-double Neural_activation_lrelu(double x, int derivative) {
+double Neural_activation_lrelu(double x, NeuralBool derivative) {
 	double slope = 0.01;
 	double y = Neural_utils_max(x, 0.01*x);
 	if(!derivative) {
@@ -30,7 +30,7 @@ double Neural_activation_lrelu(double x, int derivative) {
 	}
 }
 
-double Neural_activation_prelu(double x, int derivative) {
+double Neural_activation_prelu(double x, NeuralBool derivative) {
 	double y = Neural_utils_max(x, HYPERPARAM_PRELU*x);
 	if(!derivative) {
 		return y;
@@ -40,7 +40,7 @@ double Neural_activation_prelu(double x, int derivative) {
 	}
 }
 
-double Neural_activation_elu(double x, int derivative) {
+double Neural_activation_elu(double x, NeuralBool derivative) {
 	double y = Neural_utils_max(x, HYPERPARAM_ELU*(exp(x) - 1));
 	if(!derivative) {
 		return y;
@@ -55,7 +55,7 @@ double Neural_activation_elu(double x, int derivative) {
 	}
 }
 
-double Neural_activation_selu(double x, int derivative) {
+double Neural_activation_selu(double x, NeuralBool derivative) {
 	double lambda = 1.0507;
 	double alpha = 1.67326;
 	double y = Neural_utils_max(x, alpha*(exp(x) - 1));
@@ -72,7 +72,7 @@ double Neural_activation_selu(double x, int derivative) {
 	}
 }
 
-double Neural_activation_sigmoid(double x, int derivative) {
+double Neural_activation_sigmoid(double x, NeuralBool derivative) {
 	double y = 1.0/(1.0+exp(x));
 	if(!derivative) {
 		return y;
@@ -82,7 +82,7 @@ double Neural_activation_sigmoid(double x, int derivative) {
 	}
 }
 
-double Neural_activation_tanh(double x, int derivative) {
+double Neural_activation_tanh(double x, NeuralBool derivative) {
 	double y = tanh(x);
 	if(!derivative) {
 		return y;
@@ -92,7 +92,7 @@ double Neural_activation_tanh(double x, int derivative) {
 	}
 }
 
-double Neural_activation_sin(double x, int derivative) {
+double Neural_activation_sin(double x, NeuralBool derivative) {
 	if(!derivative) {
 		return sin(x);
 	}
@@ -101,7 +101,7 @@ double Neural_activation_sin(double x, int derivative) {
 	}
 }
 
-NeuralMatrix *Neural_activation_softmax(NeuralMatrix *vector, int derivative) {
+NeuralMatrix *Neural_activation_softmax(NeuralMatrix *vector, NeuralBool derivative) {
 	NeuralMatrix *n, *t, *d;
 	NeuralMatrix *output = Neural_matrix_clone(vector);
 

@@ -4,6 +4,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+typedef enum {
+	Neural_false = 0,
+	Neural_true = 1
+} NeuralBool;
+
 double Neural_utils_max(double a, double b);
 
 double Neural_utils_min(double a, double b);

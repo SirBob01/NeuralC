@@ -10,24 +10,24 @@
 double HYPERPARAM_PRELU;
 double HYPERPARAM_ELU;
 
-double Neural_activation_identity(double x, int derivative);
+double Neural_activation_identity(double x, NeuralBool derivative);
 
-double Neural_activation_relu(double x, int derivative);
+double Neural_activation_relu(double x, NeuralBool derivative);
 
-double Neural_activation_lrelu(double x, int derivative);
+double Neural_activation_lrelu(double x, NeuralBool derivative);
 
-double Neural_activation_prelu(double x, int derivative);
+double Neural_activation_prelu(double x, NeuralBool derivative);
 
-double Neural_activation_elu(double x, int derivative);
+double Neural_activation_elu(double x, NeuralBool derivative);
 
-double Neural_activation_selu(double x, int derivative);
+double Neural_activation_selu(double x, NeuralBool derivative);
 
-double Neural_activation_sigmoid(double x, int derivative);
+double Neural_activation_sigmoid(double x, NeuralBool derivative);
 
-double Neural_activation_tanh(double x, int derivative);
+double Neural_activation_tanh(double x, NeuralBool derivative);
 
-double Neural_activation_sin(double x, int derivative);
+double Neural_activation_sin(double x, NeuralBool derivative);
 
-NeuralMatrix *Neural_activation_softmax(NeuralMatrix *vector, int derivative); // Normalizing function
+NeuralMatrix *Neural_activation_softmax(NeuralMatrix *vector, NeuralBool derivative);
 
 #endif

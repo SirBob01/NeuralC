@@ -19,14 +19,14 @@ void Neural_error_quit(void) {
 }
 
 void *Neural_error_message_format(const char *format, int length, ...) {
-	if(length + _Neural_Error_Message_Padding > _Neural_Error_Message_Buffer) {
+	if(length + _NEURAL_ERROR_MESSAGE_PADDING > _NEURAL_ERROR_MESSAGE_BUFFER) {
 		Neural_error_set(INVALID_ERROR_MESSAGE);
 		return NULL;
 	}
 
 	va_list args;
 	va_start(args, length);
-	vsnprintf(_Neural_Error_Message, length + _Neural_Error_Message_Padding, format, args);
+	vsnprintf(_Neural_Error_Message, length + _NEURAL_ERROR_MESSAGE_PADDING, format, args);
 }
 
 char *Neural_error_get(void) {
@@ -67,7 +67,7 @@ char *Neural_error_get(void) {
 			strcpy(_Neural_Error_Message, "Training population isn't divisible by batch size.");
 			break;
 		case INVALID_ERROR_MESSAGE:
-			Neural_error_message_format("Error message is longer than %d characters.", 32, _Neural_Error_Message_Buffer);
+			Neural_error_message_format("Error message is longer than %d characters.", 32, _NEURAL_ERROR_MESSAGE_BUFFER);
 			break;
 		case -1:
 			strcpy(_Neural_Error_Message, "An unexpected error occurred.");
@@ -89,7 +89,10 @@ void Neural_error_set(NeuralError error) {
 
 	if(_Neural_Error_Log->current_length == _Neural_Error_Log->max_length) {
 		_Neural_Error_Log->max_length += 5;
-		realloc(_Neural_Error_Log->log, sizeof(NeuralError) * _Neural_Error_Log->max_length);
+		_Neural_Error_Log->log = realloc(
+			_Neural_Error_Log->log, 
+			sizeof(NeuralError) * _Neural_Error_Log->max_length
+		);
 	}
 
 	_Neural_Error_Log->current_length++;
