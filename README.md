@@ -45,7 +45,7 @@ NeuralNetwork *net = Neural_network(layers, 3, 0, Neural_cost_quadratic);
 5. Load your dataset into an array of `NeuralDataSet` structures {input, desired output}.
 ```c
 int population = 100; // 100 training examples
-NeuralDataSet *data = malloc(sizeof(NeuralDataSet) * population);
+NeuralDataPair *data = malloc(sizeof(NeuralDataPair) * population);
 ```
 
 6. Train your neural network on the dataset. Note that the population must be divisible by the batch size.
