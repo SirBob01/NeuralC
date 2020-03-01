@@ -112,7 +112,7 @@ char *Neural_error_get(void) {
 }
 
 void Neural_error_set(NeuralError error) {
-	FILE *log_file = fopen("log.txt", "a+");
+	FILE *log_file = fopen("debug.log", "a+");
 
 	if(_Neural_Error_Log.current_length == 0) {
 		fprintf(log_file, "\n");

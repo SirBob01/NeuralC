@@ -73,4 +73,4 @@ Read `NeuralC` doc-strings and comments for more information (especially on erro
 - Refactor code (it's really messy right now)
 - Implement feature parsing engine for convolutional networks
 - Read and write neural networks (and matrices) to disk
-- Improve error handling
+- Improve documentation
