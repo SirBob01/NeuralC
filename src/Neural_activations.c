@@ -1,6 +1,6 @@
 #include "Neural_activations.h"
 
-double Neural_activation_identity(double x, NeuralBool derivative) {
+double Neural_activation_linear(double x, NeuralBool derivative) {
 	if(!derivative) {
 		return x;
 	}
@@ -101,33 +101,44 @@ double Neural_activation_sin(double x, NeuralBool derivative) {
 	}
 }
 
-NeuralMatrix *Neural_activation_softmax(NeuralMatrix *vector, NeuralBool derivative) {
-	NeuralMatrix *n, *t, *d;
-	NeuralMatrix *output = Neural_matrix_clone(vector);
+void Neural_activation_softmax(
+					NeuralMatrix *res,
+					NeuralMatrix *vector, 
+					NeuralBool derivative) {
+	int len = vector->rows * vector->cols;
+	double target[len];
+	memcpy(target, vector->cells, len * sizeof(double));
 
-	int len = output->rows * output->cols;
+	// Add a shift to each term for numerical stability
+	double max = Neural_matrix_max(vector);
 	double sum = 0;
 	for(int i = 0; i < len; i++) {
-		output->cells[i] = exp(output->cells[i]);
-		sum += output->cells[i];
+		target[i] = exp(target[i] - max);
+		sum += target[i];
+	}
+	for(int i = 0; i < len; i++) {
+		target[i] /= sum;
 	}
 	
-	Neural_matrix_scale(output, (1.0/sum));
 	if(derivative) {
-		n = Neural_matrix_diagonal(output->cells, len);
-		t = Neural_matrix_clone(output);
+		NeuralMatrix *jacobian = Neural_matrix_diagonal(target, len);
+		for(int i = 0; i < len; i++) {
+			for(int j = 0; j < len; j++) {
+				double value;
+				if(i == j) {
+					value = target[i] * (1 - target[i]);
+				}
+				else {
+					value = -target[i] * target[j];
+				}
+				Neural_matrix_set_at(jacobian, value, i, j);
+			}
+		}
 
-		Neural_matrix_transpose(t);
-		Neural_matrix_multiply(t, output);
-		Neural_matrix_subtract(n, t);
-
-		d = Neural_matrix_get_diagonal(n);
-		Neural_matrix_copy(output, d);
-
-		Neural_matrix_destroy(n);
-		Neural_matrix_destroy(t);
-		Neural_matrix_destroy(d);
+		Neural_matrix_copy(res, jacobian);
+		Neural_matrix_destroy(jacobian);
 	}
-
-	return output;
+	else {
+		Neural_matrix_map(res, target);
+	}
 }

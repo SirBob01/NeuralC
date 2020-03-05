@@ -10,7 +10,7 @@
 double HYPERPARAM_PRELU;
 double HYPERPARAM_ELU;
 
-double Neural_activation_identity(double x, NeuralBool derivative);
+double Neural_activation_linear(double x, NeuralBool derivative);
 
 double Neural_activation_relu(double x, NeuralBool derivative);
 
@@ -28,6 +28,10 @@ double Neural_activation_tanh(double x, NeuralBool derivative);
 
 double Neural_activation_sin(double x, NeuralBool derivative);
 
-NeuralMatrix *Neural_activation_softmax(NeuralMatrix *vector, NeuralBool derivative);
+void Neural_activation_softmax(
+	NeuralMatrix *target,
+	NeuralMatrix *vector, 
+	NeuralBool derivative
+);
 
 #endif
