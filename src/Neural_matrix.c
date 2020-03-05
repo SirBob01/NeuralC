@@ -6,24 +6,17 @@ NeuralMatrix *Neural_matrix(double *values, int rows, int cols) {
 		Neural_error_set(NO_MATRIX_MEMORY);
 	}
 
-	m->cells = malloc(sizeof(double) * rows * cols);
+	// Default 0 matrix
+	m->cells = calloc(rows * cols, sizeof(double));
 	if(!m->cells) {
 		Neural_error_set(NO_MATRIX_MEMORY);
 	}
-
 	m->rows = rows;
 	m->cols = cols;
 
-	// Default 0 matrix
-	if(!values) {
-		for(int i = 0; i < rows * cols; ++i) {
-			m->cells[i] = 0.0;
-		}
-	}
-	else {
+	if(values) {
 		Neural_matrix_map(m, values);
 	}
-
 	return m;
 }
 
@@ -206,6 +199,26 @@ double Neural_matrix_sum(NeuralMatrix *m) {
 	}
 
 	return sum;
+}
+
+double Neural_matrix_min(NeuralMatrix *m) {
+	double min = m->cells[0];
+	for(int i = 0; i < m->rows * m->cols; i++) {
+		if(m->cells[i] < min) {
+			min = m->cells[i];
+		}
+	}
+	return min;
+}
+
+double Neural_matrix_max(NeuralMatrix *m) {
+	double max = m->cells[0];
+	for(int i = 0; i < m->rows * m->cols; i++) {
+		if(m->cells[i] > max) {
+			max = m->cells[i];
+		}
+	}
+	return max;
 }
 
 double Neural_matrix_dot(NeuralMatrix *a, NeuralMatrix *b) {

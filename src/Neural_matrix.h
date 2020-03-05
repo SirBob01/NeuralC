@@ -55,6 +55,10 @@ void Neural_matrix_transpose(NeuralMatrix *res, NeuralMatrix *m);
 
 double Neural_matrix_sum(NeuralMatrix *m);
 
+double Neural_matrix_min(NeuralMatrix *m);
+
+double Neural_matrix_max(NeuralMatrix *m);
+
 double Neural_matrix_dot(NeuralMatrix *a, NeuralMatrix *b);
 
 short Neural_matrix_within_bounds(NeuralMatrix *m, int row, int col);
