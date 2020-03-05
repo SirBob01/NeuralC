@@ -131,7 +131,11 @@ void Neural_error_set(NeuralError error) {
 
 	_Neural_Error_Log.current_length++;
 	_Neural_Error_Log.log[_Neural_Error_Log.current_length-1] = error;
-
+	
+	fprintf(stderr, "NeuralC encountered error code %d: %s\n", 
+		error, 
+		Neural_error_get()
+	);
 	fprintf(log_file, "ID: %d Errno.: %d -- %d-%d-%d %d:%d:%d -- %s\n", 
 		_Neural_Error_Log.current_length, 
 		error,
@@ -144,4 +148,5 @@ void Neural_error_set(NeuralError error) {
 		Neural_error_get()
 	);
 	fclose(log_file);
+	exit(EXIT_FAILURE);
 }
