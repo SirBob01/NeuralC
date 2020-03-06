@@ -1,223 +1,257 @@
 #include "Neural_network.h"
 
-NeuralDataPair Neural_data_pair(int len_inputs, int len_expected) {
-	NeuralDataPair n;
-	n.len_inputs = len_inputs;
-	n.len_expected = len_expected;
+NeuralNetwork *Neural_network(NeuralNetworkDef def) {    
+    NeuralNetwork *net = malloc(sizeof(NeuralNetwork));
+    if(!net) {
+        Neural_error_set(NO_NETWORK_MEMORY);
+    }
 
-	n.inputs = calloc(n.len_inputs, sizeof(double));
-	n.expected = calloc(n.len_expected, sizeof(double));
-	return n;
+    net->def.structure = malloc(sizeof(NeuralLayer) * def.layers);
+    memcpy(
+        net->def.structure, 
+        def.structure, 
+        sizeof(NeuralLayer) * def.layers
+    );
+
+    net->def.cost = def.cost;
+    net->def.layers = def.layers;
+    net->def.softmax_output = def.softmax_output;
+
+    // Allocate matrix arrays
+    net->active = malloc(sizeof(NeuralMatrix *) * def.layers);
+    net->input_sums = malloc(sizeof(NeuralMatrix *) * (def.layers-1));
+
+    net->weights = malloc(sizeof(NeuralMatrix *) * (def.layers-1));
+    net->biases = malloc(sizeof(NeuralMatrix *) * (def.layers-1));
+
+    net->delta_w = malloc(sizeof(NeuralMatrix *) * (def.layers-1));
+    net->delta_b = malloc(sizeof(NeuralMatrix *) * (def.layers-1));
+
+    if(!net->def.structure || 
+       !net->input_sums || !net->active || 
+       !net->weights || !net->delta_w || 
+       !net->biases || !net->delta_b) {
+        Neural_error_set(NO_NETWORK_MEMORY);
+    }
+
+    for(int i = 0; i < def.layers; ++i) {
+        net->active[i] = Neural_matrix(NULL, 1, def.structure[i].nodes);
+
+        if(i < net->def.layers - 1) {
+            net->input_sums[i] = Neural_matrix(NULL, 1, def.structure[i+1].nodes);
+            net->weights[i] = Neural_matrix(
+                NULL, def.structure[i].nodes, def.structure[i+1].nodes
+            );
+            net->biases[i] = Neural_matrix(
+                NULL, 1, def.structure[i+1].nodes
+            );
+
+            net->delta_w[i] = Neural_matrix_clone(net->weights[i]);
+            net->delta_b[i] = Neural_matrix_clone(net->biases[i]);
+
+            // Randomize weights (-1, 1)
+            int len_weights = net->weights[i]->rows * net->weights[i]->cols;
+            for(int j = 0; j < len_weights; ++j) {
+                net->weights[i]->cells[j] = (Neural_utils_random()*2)-1;
+            }
+        }
+    }
+    return net;
 }
 
-NeuralNetwork *Neural_network(
-					NeuralLayer *layers, int n, NeuralBool normalize, 
-					double (*cost_function)(double, double, NeuralBool)) {	
-	NeuralNetwork *net = malloc(sizeof(NeuralNetwork));
-	if(!net) {
-		Neural_error_set(NO_NETWORK_MEMORY);
-	}
+void Neural_network_destroy(NeuralNetwork *net) {
+    // Leave no malloc unfreed
+    for(int i = 0; i < net->def.layers; i++) {
+        Neural_matrix_destroy(net->active[i]);
 
-	net->structure = layers;
-	net->cost = cost_function;
-	net->layers = n;
-	net->normalize = normalize;
+        if(i < net->def.layers - 1) {
+            Neural_matrix_destroy(net->input_sums[i]);
 
-	net->states = malloc(sizeof(NeuralMatrix *) * n);
-	net->weights = malloc(sizeof(NeuralMatrix *) * (n-1));
-	net->biases = malloc(sizeof(NeuralMatrix *) * (n-1));
+            Neural_matrix_destroy(net->weights[i]);
+            Neural_matrix_destroy(net->biases[i]);
 
-	net->delta_w = malloc(sizeof(NeuralMatrix *) * (n-1));
-	net->delta_b = malloc(sizeof(NeuralMatrix *) * (n-1));
+            Neural_matrix_destroy(net->delta_w[i]);
+            Neural_matrix_destroy(net->delta_b[i]);
+        }
+    }
+    free(net->def.structure);
 
-	if(!net->states || 
-	   !net->weights || 
-	   !net->biases || 
-	   !net->delta_w || 
-	   !net->delta_b) {
-		Neural_error_set(NO_NETWORK_MEMORY);
-	}
+    free(net->active);
+    free(net->input_sums);
 
-	for(int i = 0; i < n; ++i) {
-		net->states[i] = Neural_matrix(NULL, 1, layers[i].nodes);
+    free(net->weights);
+    free(net->biases);
 
-		if(i < n-1) {
-			net->weights[i] = Neural_matrix(NULL, layers[i].nodes, layers[i+1].nodes);
-			net->biases[i] = Neural_matrix(NULL, 1, layers[i+1].nodes);
+    free(net->delta_w);
+    free(net->delta_b);
 
-			net->delta_w[i] = Neural_matrix(NULL, layers[i].nodes, layers[i+1].nodes);
-			net->delta_b[i] = Neural_matrix(NULL, 1, layers[i+1].nodes);
-
-			// Randomize weights (-1, 1)
-			for(int j = 0; j < layers[i].nodes * layers[i+1].nodes; ++j) {
-				net->weights[i]->cells[j] = (Neural_utils_random()*2)-1;
-			}
-		}
-	}
-	
-	return net;
+    free(net);
 }
 
-void Neural_network_destroy(NeuralNetwork *n) {
-	for(int i = 0; i < n->layers; i++) {
-		Neural_matrix_destroy(n->states[i]);
-
-		if(i < n->layers-1) {
-			Neural_matrix_destroy(n->weights[i]);
-			Neural_matrix_destroy(n->biases[i]);
-
-			Neural_matrix_destroy(n->delta_w[i]);
-			Neural_matrix_destroy(n->delta_b[i]);
-		}
-	}
-
-	free(n->states);
-	free(n->weights);
-	free(n->biases);
-
-	free(n->delta_w);
-	free(n->delta_b);
-
-	free(n);
+NeuralMatrix *Neural_network_output(NeuralNetwork *net) {
+    return net->active[net->def.layers-1];
 }
 
-NeuralMatrix *Neural_network_forward(NeuralNetwork *n, double *inputs) {
-	Neural_matrix_map(n->states[0], inputs);	
-	NeuralMatrix *target;
-	NeuralMatrix *next = Neural_matrix(NULL, 1, 1);
+void Neural_network_forward(NeuralNetwork *net, double *inputs) {
+    Neural_matrix_map(net->active[0], inputs);
 
-	for(int i = 0; i < n->layers; ++i) {
-		// a(n+1) = z(n)*w(n, n+1) + b(n+1)
-		if(i < n->layers-1) {
-			Neural_matrix_copy(next, n->states[i]);
+    // z(n) = a(n-1)*w(n, n-1) + b(n)
+    // a(n) = activation(z(n))
+    for(int i = 0; i < net->def.layers-1; ++i) {
+        Neural_matrix_multiply(
+            net->input_sums[i], 
+            net->active[i], 
+            net->weights[i]
+        );
+        Neural_matrix_add(NULL, net->input_sums[i], net->biases[i]);
 
-			Neural_matrix_multiply(next, n->weights[i]);
-			Neural_matrix_add(next, n->biases[i]);
-			
-			Neural_matrix_copy(n->states[i+1], next);
-			target = n->states[i+1];
-		}
-		else {
-			target = n->states[i]; // Last layer (output)
-		}
-
-		// z(n) = f(a(n))
-		// Allows custom activation functions
-		if(n->structure[i].activation != NULL) {
-			for(int j = 0; j < target->rows * target->cols; ++j) {
-				target->cells[j] = n->structure[i].activation(target->cells[j], 0);
-			}
-		}
-	}
-
-	if(n->normalize) {
-		// Normalize output for multi-classification problems
-		target = Neural_activation_softmax(n->states[n->layers-1], 0);
-		Neural_matrix_copy(n->states[n->layers-1], target);
-		Neural_matrix_destroy(target);
-	}
-
-	Neural_matrix_destroy(next);
-	return n->states[n->layers-1];
+        if(i < net->def.layers-1 || !net->def.softmax_output) {
+            int width = net->active[i+1]->cols;
+            double target[width];
+            for(int j = 0; j < width; ++j) {
+                target[j] = net->def.structure[i].activation(
+                    net->input_sums[i]->cells[j], 
+                    Neural_false
+                );
+            }
+            Neural_matrix_map(net->active[i+1], target);
+        }
+        else {
+            Neural_activation_softmax(
+                net->active[i+1], net->input_sums[i], Neural_false
+            );
+        }
+    }
 }
 
-void Neural_network_backward(NeuralNetwork *n, double *expected) {
-	NeuralMatrix *error_gradient = Neural_matrix(NULL, 1, n->structure[n->layers-1].nodes);
-	NeuralMatrix *a_delta = Neural_matrix(NULL, 1, 1);
-	NeuralMatrix *p_delta = Neural_matrix(NULL, 1, 1);
-	NeuralMatrix *w_delta = Neural_matrix(NULL, 1, 1);
+void Neural_network_backward(NeuralNetwork *net, double *expected) {
+    NeuralMatrix *output = Neural_network_output(net);
+    NeuralMatrix *act_delta = Neural_matrix(NULL, 1, 1);
+    NeuralMatrix *layer_error = Neural_matrix(NULL, 1, 1);
+    NeuralMatrix *output_error = Neural_matrix(NULL, 1, output->cols);
+    int last_layer = net->def.layers-1;
 
-	// Error gradient vector
-	for(int i = 0; i < error_gradient->rows * error_gradient->cols; ++i) {
-		error_gradient->cells[i] = n->cost(n->states[n->layers-1]->cells[i], expected[i], 1);
-	}
+    // Error gradient vector
+    for(int i = 0; i < output_error->cols; i++) {
+        output_error->cells[i] = net->def.cost(
+            output->cells[i],
+            expected[i], 
+            Neural_true
+        );
+    }
+    
+    for(int i = last_layer; i > 0; i--) {
+        // Calculate activation delta
+        Neural_matrix_copy(act_delta, net->input_sums[i-1]);
+        for(int j = 0; j < act_delta->cols; j++) {
+            act_delta->cells[j] = net->def.structure[i].activation(
+                act_delta->cells[j],
+                Neural_true
+            );
+        }
 
-	// Propagate backwards
-	for(int i = n->layers-1; i > 0; --i) {
-		Neural_matrix_copy(a_delta, n->states[i]);
-		Neural_matrix_copy(p_delta, n->states[i-1]);
+        // Calculate layer error
+        if(i == last_layer) {
+            Neural_matrix_copy(layer_error, act_delta);
+            Neural_matrix_hadamard(NULL, layer_error, output_error);
+        }
+        else {
+            NeuralMatrix *last_layer_error = net->delta_b[i];
+            Neural_matrix_copy(layer_error, net->weights[i]);
+            Neural_matrix_transpose(NULL, layer_error);
+            Neural_matrix_multiply(
+                layer_error, 
+                last_layer_error, 
+                layer_error
+            );
+            
+            Neural_matrix_hadamard(NULL, layer_error, act_delta);
+        }
 
-		if(i == n->layers-1 && n->normalize) {
-			NeuralMatrix *norm = Neural_activation_softmax(a_delta, 1);
-			Neural_matrix_copy(a_delta, norm);
-			Neural_matrix_destroy(norm);
-		}
+        // Update the bias and weight deltas
+        Neural_matrix_copy(net->delta_b[i-1], layer_error);
 
-		if(n->structure[i].activation != NULL) {
-			for(int j = 0; j < n->structure[i].nodes; ++j) {
-				a_delta->cells[j] = n->structure[i].activation(a_delta->cells[j], 1);
-			}
-		}
+        Neural_matrix_copy(net->delta_w[i-1], layer_error);
+        Neural_matrix_transpose(NULL, net->delta_w[i-1]);
+        Neural_matrix_multiply(NULL, net->delta_w[i-1], net->active[i-1]);
+        Neural_matrix_transpose(NULL, net->delta_w[i-1]);
+    }
 
-		if(i < n->layers-1) {
-			Neural_matrix_copy(w_delta, n->weights[i]);
-			Neural_matrix_transpose(w_delta);
-			Neural_matrix_multiply(error_gradient, w_delta);
-		}
-
-		Neural_matrix_hadamard(error_gradient, a_delta);
-		Neural_matrix_transpose(p_delta);
-		Neural_matrix_multiply(p_delta, error_gradient);
-
-		Neural_matrix_copy(n->delta_w[i-1], p_delta);
-		Neural_matrix_copy(n->delta_b[i-1], error_gradient);
-	}
-
-	Neural_matrix_destroy(error_gradient);
-	Neural_matrix_destroy(a_delta);
-	Neural_matrix_destroy(p_delta);
-	Neural_matrix_destroy(w_delta);
+    // Cleanup
+    Neural_matrix_destroy(act_delta);
+    Neural_matrix_destroy(layer_error);
+    Neural_matrix_destroy(output_error);
 }
 
-void Neural_network_train(
-			NeuralNetwork *n, NeuralDataPair *population, 
-			int population_size, int batch_size, double learning_rate) {
-	if(population_size % batch_size != 0) {
-		Neural_error_set(INVALID_BATCH_SIZE);
-	}
+void Neural_network_train(NeuralNetwork *net, NeuralTrainer trainer) {
+    if(trainer.population_size % trainer.batch_size) {
+        Neural_error_set(INVALID_BATCH_SIZE);
+    }
 
-	Neural_utils_shuffle(population, population_size, sizeof(NeuralDataPair));
+    // Shuffle the population on each pass
+    int order[trainer.population_size];
+    for(int i = 0; i < trainer.population_size; i++) {
+        order[i] = i;
+    }
+    Neural_utils_shuffle(
+        order, 
+        trainer.population_size, 
+        sizeof(int)
+    );
 
-	NeuralMatrix **batch_delta_w = malloc(sizeof(NeuralMatrix *) * (n->layers - 1));
-	NeuralMatrix **batch_delta_b = malloc(sizeof(NeuralMatrix *) * (n->layers - 1));
+    // Average the delta for each batch and apply that to the network weights
+    // batch_delta = delta_sum * learning_rate / batch_size
+    double l_scale = trainer.learning_rate/((double)trainer.batch_size);
 
-	double l_scale = learning_rate/((double)batch_size);
+    NeuralMatrix **batch_delta_w = malloc(
+        sizeof(NeuralMatrix *[net->def.layers-1])
+    );
+    NeuralMatrix **batch_delta_b = malloc(
+        sizeof(NeuralMatrix *[net->def.layers-1])
+    );
 
-	for(int i = 0; i < n->layers-1; ++i) {
-		batch_delta_w[i] = Neural_matrix(NULL, n->structure[i].nodes, n->structure[i+1].nodes);
-		batch_delta_b[i] = Neural_matrix(NULL, 1, n->structure[i+1].nodes);
-	}
+    for(int i = 0; i < net->def.layers-1; ++i) {
+        batch_delta_w[i] = Neural_matrix_clone(net->weights[i]);
+        batch_delta_b[i] = Neural_matrix_clone(net->biases[i]);
+    }
+    for(int i = 0; i < trainer.population_size; ++i) {
+        Neural_network_forward(net, trainer.population[order[i]]->inputs);
+        Neural_network_backward(net, trainer.population[order[i]]->expected);
 
-	for(int i = 0; i < population_size; ++i) {
-		Neural_network_forward(n, population[i].inputs);
-		Neural_network_backward(n, population[i].expected);
+        for(int j = 0; j < net->def.layers-1; ++j) {
+            Neural_matrix_add(NULL, batch_delta_w[j], net->delta_w[j]);
+            Neural_matrix_add(NULL, batch_delta_b[j], net->delta_b[j]);
+        }
 
-		for(int j = 0; j < n->layers-1; ++j) {
-			Neural_matrix_add(batch_delta_w[j], n->delta_w[j]);
-			Neural_matrix_add(batch_delta_b[j], n->delta_b[j]);
-		}
+        if((i+1)%trainer.batch_size == 0) {
+            // Update weights and biases on each pass
+            for(int j = 0; j < net->def.layers-1; ++j) {
+                Neural_matrix_scale(batch_delta_w[j], l_scale);
+                Neural_matrix_subtract(
+                    NULL, net->weights[j], batch_delta_w[j]
+                );
 
-		if((i+1)%batch_size == 0) {
-			// Update weights and biases on each pass
-			for(int j = 0; j < n->layers-1; ++j) {
-				Neural_matrix_scale(batch_delta_w[j], l_scale);
-				Neural_matrix_subtract(n->weights[j], batch_delta_w[j]);
+                Neural_matrix_scale(batch_delta_b[j], l_scale);
+                Neural_matrix_subtract(
+                    NULL, net->biases[j], batch_delta_b[j]
+                );
 
-				Neural_matrix_scale(batch_delta_b[j], l_scale);
-				Neural_matrix_subtract(n->biases[j], batch_delta_b[j]);
+                // Reset values for next pass
+                Neural_matrix_subtract(
+                    NULL, batch_delta_w[j], batch_delta_w[j]
+                );
+                Neural_matrix_subtract(
+                    NULL, batch_delta_b[j], batch_delta_b[j]
+                );
+            }
+        }
+    }
 
-				// Reset values for next pass
-				Neural_matrix_subtract(batch_delta_w[j], batch_delta_w[j]);
-				Neural_matrix_subtract(batch_delta_b[j], batch_delta_b[j]);
-			}
-		}
-	}
-
-	for(int i = 0; i < n->layers-1; ++i) {
-		Neural_matrix_destroy(batch_delta_w[i]);
-		Neural_matrix_destroy(batch_delta_b[i]);
-	}
-
-	free(batch_delta_w);
-	free(batch_delta_b);
+    // Cleanup
+    for(int i = 0; i < net->def.layers-1; ++i) {
+        Neural_matrix_destroy(batch_delta_w[i]);
+        Neural_matrix_destroy(batch_delta_b[i]);
+    }
+    free(batch_delta_w);
+    free(batch_delta_b);
 }

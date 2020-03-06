@@ -6,54 +6,56 @@
 
 #include "Neural_matrix.h"
 #include "Neural_activations.h"
+#include "Neural_datapair.h"
 #include "Neural_utils.h"
 #include "Neural_error.h"
 
 typedef struct {
-	double *inputs;
-	double *expected;
-
-	int len_inputs;
-	int len_expected;
-} NeuralDataPair;
-
-typedef struct {
-	int nodes;
-	double (*activation)(double x, NeuralBool derivative);
+    int nodes;
+    double (*activation)(double, NeuralBool);
 } NeuralLayer;
 
 typedef struct {
-	NeuralLayer *structure;
-	int layers;
-	double (*cost)(double output, double expected, NeuralBool derivative);
+    NeuralLayer *structure;
+    int layers;
 
-	NeuralMatrix **states;
-	NeuralMatrix **weights;
-	NeuralMatrix **biases;
+    double (*cost)(double, double, NeuralBool);
+    NeuralBool softmax_output;
+} NeuralNetworkDef;
 
-	NeuralMatrix **delta_w;
-	NeuralMatrix **delta_b;
+typedef struct {
+    NeuralNetworkDef def;
 
-	NeuralBool normalize;
+    NeuralMatrix **active;
+    NeuralMatrix **input_sums;
+
+    NeuralMatrix **weights;
+    NeuralMatrix **biases;
+
+    NeuralMatrix **delta_w;
+    NeuralMatrix **delta_b;
 } NeuralNetwork;
 
+typedef struct {
+    NeuralDataPair **population;
+    
+    int population_size;
+    int batch_size;
 
-NeuralDataPair Neural_data_pair(int inputs, int outputs);
+    double learning_rate;
+} NeuralTrainer;
 
-NeuralNetwork *Neural_network(
-	NeuralLayer *layers, int n, NeuralBool normalize, 
-	double (*cost_function)(double, double, NeuralBool)
-);
 
-void Neural_network_destroy(NeuralNetwork *n);
+NeuralNetwork *Neural_network(NeuralNetworkDef def);
 
-NeuralMatrix *Neural_network_forward(NeuralNetwork *n, double *inputs);
+void Neural_network_destroy(NeuralNetwork *net);
 
-void Neural_network_backward(NeuralNetwork *n, double *expected);
+NeuralMatrix *Neural_network_output(NeuralNetwork *net);
 
-void Neural_network_train(
-	NeuralNetwork *n, NeuralDataPair *population, 
-	int population_size, int batch_size, double learning_rate
-);
+void Neural_network_forward(NeuralNetwork *net, double *inputs);
+
+void Neural_network_backward(NeuralNetwork *net, double *expected);
+
+void Neural_network_train(NeuralNetwork *net, NeuralTrainer trainer);
 
 #endif

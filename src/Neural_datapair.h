@@ -4,11 +4,11 @@
 #include <stdlib.h>
 
 typedef struct {
-	double *inputs;
-	double *expected;
+    double *inputs;
+    double *expected;
 
-	int len_inputs;
-	int len_expected;
+    int len_inputs;
+    int len_expected;
 } NeuralDataPair;
 
 

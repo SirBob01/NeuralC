@@ -5,6 +5,7 @@
 #include <time.h>
 
 #include "Neural_network.h"
+#include "Neural_datapair.h"
 #include "Neural_activations.h"
 #include "Neural_costs.h"
 #include "Neural_matrix.h"

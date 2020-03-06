@@ -1,8 +1,8 @@
 #include "../src/Neural.h"
 
 const double pi = 3.14159265358979323846;
-const int population_size = 360;
-const int batch_size = 9;
+const int population_size = 4;
+const int batch_size = 1;
 
 int main(int argc, char **argv) {
     Neural_init();
@@ -12,10 +12,10 @@ int main(int argc, char **argv) {
 
     // Define network structure
     NeuralLayer structure[4] = {
-        {1, Neural_activation_prelu},
-        {10, Neural_activation_prelu},
-        {10, Neural_activation_prelu},
-        {1, Neural_activation_tanh}
+        {2, Neural_activation_prelu},
+        {5, Neural_activation_prelu},
+        {5, Neural_activation_prelu},
+        {1, Neural_activation_sigmoid}
     };
 
     // Initialize network
@@ -30,39 +30,47 @@ int main(int argc, char **argv) {
     
     // Initialize dataset
     NeuralDataPair *pairs[population_size];
+
+    // Define our test input data
+    double test_data[4][2] = {{0.0, 0.0}, 
+                              {1.0, 0.0}, 
+                              {0.0, 1.0},
+                              {1.0, 1.0}
+    };
+
     for(int i = 0; i < population_size; i++) {
-        pairs[i] = Neural_datapair(1, 1);
+        pairs[i] = Neural_datapair(2, 1);
 
         // Set value map input -> expected
-        pairs[i]->inputs[0] = (i*pi/180.0)/(2*pi);
-        pairs[i]->expected[0] = sin(i*pi/180.0);
+        memcpy(pairs[i]->inputs, test_data[i], sizeof(double) * 2);
+        pairs[i]->expected[0] = (double)(
+            (unsigned)test_data[i][0] ^ (unsigned)test_data[i][1]
+        );
+        printf("%.5f ^ %.5f = %.5f\n", 
+            pairs[i]->inputs[0], pairs[i]->inputs[1],
+            pairs[i]->expected[0]
+        );
     }
-    
-    // Define our test input data
-    double test_data[3][1] = {{(pi/6)/(2*pi)}, 
-                              {(pi/4)/(2*pi)}, 
-                              {(pi/3)/(2*pi)}
-    };
     
     // Initial output of network
     printf("INITIAL:\n");
-    for(int i = 0; i < 3; i++) {
+    for(int i = 0; i < population_size; i++) {
         Neural_network_forward(net, test_data[i]);
-        printf("sin(%.5f) = ", test_data[i][0]*(2*pi));
+        printf("xor(%.5f %.5f) = ", test_data[i][0], test_data[i][1]);
         Neural_matrix_print(Neural_network_output(net));
     }
     
     // Train the network 1000 times
     printf("\nTRAINING...\n");
-
+    
     NeuralTrainer trainer;
     trainer.population = pairs;
     trainer.population_size = population_size;
     trainer.batch_size = batch_size;
     trainer.learning_rate = 0.001;
-    
+
     double last_error = 0;
-    for(int i = 0; i < 10000; ++i) {
+    for(int i = 0; i < 100000; ++i) {
         Neural_network_train(
             net, 
             trainer
@@ -78,7 +86,7 @@ int main(int argc, char **argv) {
             );
         }
         error /= population_size;
-		if(fabs(error - last_error) > 0.0000001) {
+        if(fabs(error - last_error) > 0.0000001) {
             printf("Iteration: %d | Error: %f\n", i+1, error);
             last_error = error;
         }
@@ -86,9 +94,9 @@ int main(int argc, char **argv) {
 
     // Check output of network again
     printf("\nFINAL:\n");
-    for(int i = 0; i < 3; i++) {
+    for(int i = 0; i < population_size; i++) {
         Neural_network_forward(net, test_data[i]);
-        printf("sin(%.5f) = ", test_data[i][0]*(2*pi));
+        printf("xor(%.5f %.5f) = ", test_data[i][0], test_data[i][1]);
         Neural_matrix_print(Neural_network_output(net));
     }
 

@@ -7,11 +7,11 @@
 #include "Neural.h"
 
 void Neural_init(void) {
-	// Initialize subsystems
-	srand(time(NULL));
-	Neural_error_init();
+    // Initialize subsystems
+    srand(time(NULL));
+    Neural_error_init();
 }
 
 void Neural_quit(void) {
-	Neural_error_quit();
+    Neural_error_quit();
 }

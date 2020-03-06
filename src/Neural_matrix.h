@@ -8,8 +8,8 @@
 #include "Neural_error.h"
 
 typedef struct {
-	double *cells;
-	int rows, cols;
+    double *cells;
+    int rows, cols;
 } NeuralMatrix;
 
 
@@ -36,19 +36,19 @@ void Neural_matrix_set_at(NeuralMatrix *m, double value, int row, int col);
 void Neural_matrix_scale(NeuralMatrix *m, double s);
 
 void Neural_matrix_add(
-	NeuralMatrix *res, NeuralMatrix *a, NeuralMatrix *b
+    NeuralMatrix *res, NeuralMatrix *a, NeuralMatrix *b
 );
 
 void Neural_matrix_subtract(
-	NeuralMatrix *res, NeuralMatrix *a, NeuralMatrix *b
+    NeuralMatrix *res, NeuralMatrix *a, NeuralMatrix *b
 );
 
 void Neural_matrix_hadamard(
-	NeuralMatrix *res, NeuralMatrix *a, NeuralMatrix *b
+    NeuralMatrix *res, NeuralMatrix *a, NeuralMatrix *b
 );
 
 void Neural_matrix_multiply(
-	NeuralMatrix *res, NeuralMatrix *a, NeuralMatrix *b
+    NeuralMatrix *res, NeuralMatrix *a, NeuralMatrix *b
 );
 
 void Neural_matrix_transpose(NeuralMatrix *res, NeuralMatrix *m);

@@ -5,8 +5,8 @@
 #include <string.h>
 
 typedef enum {
-	Neural_false = 0,
-	Neural_true = 1
+    Neural_false = 0,
+    Neural_true = 1
 } NeuralBool;
 
 double Neural_utils_max(double a, double b);
