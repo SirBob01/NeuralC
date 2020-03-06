@@ -30,9 +30,9 @@ Neural_init();
 Neural_set_hyperparam_prelu(0.05);
 
 NeuralLayer structure[3] = {
-		{1, Neural_activation_identity},
-		{5, Neural_activation_prelu},
-		{1, Neural_activation_identity}
+        {1, Neural_activation_identity},
+        {5, Neural_activation_prelu},
+        {1, Neural_activation_identity}
 };
 ```
 
@@ -50,14 +50,14 @@ net_def.softmax_output = Neural_false;
 NeuralNetwork *net = Neural_network(net_def);
 ```
 
-6. Load your dataset into an array of `NeuralDataSet` structures {input, desired output}.
+6. Load your dataset into an array of `NeuralDataPair` structures {input, desired output}.
 ```c
 int population = 100; // 100 training examples
 NeuralDataPair *pair[population];
 for(int i = 0; i < population; i++) {
-	pair[i] = Neural_datapair(1, 1); // 1 input, 1 output
+    pair[i] = Neural_datapair(1, 1); // 1 input, 1 output
 
-	// Set the datapair's input and expected output arrays
+    // Set the datapair's input and expected output arrays
 }
 ```
 
@@ -74,7 +74,7 @@ trainer.learning_rate = 0.001;
 ```c
 int epochs = 1000;
 for(int i = 0; i < epochs; i++) {
-	Neural_network_train(net, trainer);
+    Neural_network_train(net, trainer);
 }
 ```
 
@@ -82,7 +82,7 @@ for(int i = 0; i < epochs; i++) {
 ```c
 // Clean-up
 for(int i = 0; i < population; i++) {
-	Neural_datapair_destroy(pairs[i]);
+    Neural_datapair_destroy(pairs[i]);
 }
 Neural_network_destroy(net);
 

@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
             );
         }
         error /= population_size;
-		if(fabs(error - last_error) > 0.0000001) {
+        if(fabs(error - last_error) > 0.0000001) {
             printf("Iteration: %d | Error: %f\n", i+1, error);
             last_error = error;
         }
