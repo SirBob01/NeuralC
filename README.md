@@ -6,7 +6,9 @@ A lightweight, standalone C library for implementing deep feed-forward neural ne
 - Custom activation and cost functions with hyperparameters
 - A full matrix library
 
-This is a learning exercise hobby project.
+This is a learning exercise hobby project. Here is a visualization of the example sine approximator.
+
+<img src="./media/sin_approx.png" alt="Sine Function" width="500"/>
 
 # Dependencies
 

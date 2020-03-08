@@ -1,7 +1,7 @@
 #include "../src/Neural.h"
 
 const double pi = 3.14159265358979323846;
-const int population_size = 180;
+const int population_size = 360;
 const int batch_size = 9;
 
 int main(int argc, char **argv) {
@@ -32,11 +32,10 @@ int main(int argc, char **argv) {
     // Initialize dataset
     NeuralDataPair *pairs[population_size];
     for(int j = 0; j < population_size; j++) {
-        int i = j-90;
         pairs[j] = Neural_datapair(1, 1);
 
         // Set value map input -> expected
-        pairs[j]->inputs[0] = i*pi/180;
+        pairs[j]->inputs[0] = j*pi/180;
         pairs[j]->expected[0] = sin(pairs[j]->inputs[0]);
     }
     
