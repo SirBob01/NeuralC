@@ -5,17 +5,7 @@ NeuralNetwork *Neural_network(NeuralNetworkDef def) {
     if(!net) {
         Neural_error_set(NO_NETWORK_MEMORY);
     }
-
-    net->def.structure = malloc(sizeof(NeuralLayer) * def.layers);
-    memcpy(
-        net->def.structure, 
-        def.structure, 
-        sizeof(NeuralLayer) * def.layers
-    );
-
-    net->def.cost = def.cost;
-    net->def.layers = def.layers;
-    net->def.softmax_output = def.softmax_output;
+    net->def = def;
 
     // Allocate matrix arrays
     net->active = malloc(sizeof(NeuralMatrix *) * def.layers);
@@ -35,15 +25,17 @@ NeuralNetwork *Neural_network(NeuralNetworkDef def) {
     }
 
     for(int i = 0; i < def.layers; ++i) {
-        net->active[i] = Neural_matrix(NULL, 1, def.structure[i].nodes);
+        net->active[i] = Neural_matrix(NULL, def.structure[i].nodes, 1);
 
         if(i < net->def.layers - 1) {
-            net->input_sums[i] = Neural_matrix(NULL, 1, def.structure[i+1].nodes);
+            net->input_sums[i] = Neural_matrix(
+                NULL, def.structure[i+1].nodes, 1
+            );
             net->weights[i] = Neural_matrix(
-                NULL, def.structure[i].nodes, def.structure[i+1].nodes
+                NULL, def.structure[i+1].nodes, def.structure[i].nodes
             );
             net->biases[i] = Neural_matrix(
-                NULL, 1, def.structure[i+1].nodes
+                NULL, def.structure[i+1].nodes, 1
             );
 
             net->delta_w[i] = Neural_matrix_clone(net->weights[i]);
@@ -74,8 +66,6 @@ void Neural_network_destroy(NeuralNetwork *net) {
             Neural_matrix_destroy(net->delta_b[i]);
         }
     }
-    free(net->def.structure);
-
     free(net->active);
     free(net->input_sums);
 
@@ -100,27 +90,20 @@ void Neural_network_forward(NeuralNetwork *net, double *inputs) {
     for(int i = 0; i < net->def.layers-1; ++i) {
         Neural_matrix_multiply(
             net->input_sums[i], 
-            net->active[i], 
-            net->weights[i]
+            net->weights[i],
+            net->active[i]
         );
         Neural_matrix_add(NULL, net->input_sums[i], net->biases[i]);
 
-        if(i < net->def.layers-1 || !net->def.softmax_output) {
-            int width = net->active[i+1]->cols;
-            double target[width];
-            for(int j = 0; j < width; ++j) {
-                target[j] = net->def.structure[i].activation(
-                    net->input_sums[i]->cells[j], 
-                    Neural_false
-                );
-            }
-            Neural_matrix_map(net->active[i+1], target);
-        }
-        else {
-            Neural_activation_softmax(
-                net->active[i+1], net->input_sums[i], Neural_false
+        int width = net->active[i+1]->rows;
+        double target[width];
+        for(int j = 0; j < width; j++) {
+            target[j] = net->def.structure[i+1].activation(
+                net->input_sums[i]->cells[j], 
+                Neural_false
             );
         }
+        Neural_matrix_map(net->active[i+1], target);
     }
 }
 
@@ -128,11 +111,11 @@ void Neural_network_backward(NeuralNetwork *net, double *expected) {
     NeuralMatrix *output = Neural_network_output(net);
     NeuralMatrix *act_delta = Neural_matrix(NULL, 1, 1);
     NeuralMatrix *layer_error = Neural_matrix(NULL, 1, 1);
-    NeuralMatrix *output_error = Neural_matrix(NULL, 1, output->cols);
+    NeuralMatrix *output_error = Neural_matrix(NULL, 1, output->rows);
     int last_layer = net->def.layers-1;
 
     // Error gradient vector
-    for(int i = 0; i < output_error->cols; i++) {
+    for(int i = 0; i < output_error->rows; i++) {
         output_error->cells[i] = net->def.cost(
             output->cells[i],
             expected[i], 
@@ -143,7 +126,7 @@ void Neural_network_backward(NeuralNetwork *net, double *expected) {
     for(int i = last_layer; i > 0; i--) {
         // Calculate activation delta
         Neural_matrix_copy(act_delta, net->input_sums[i-1]);
-        for(int j = 0; j < act_delta->cols; j++) {
+        for(int j = 0; j < act_delta->rows; j++) {
             act_delta->cells[j] = net->def.structure[i].activation(
                 act_delta->cells[j],
                 Neural_true
@@ -160,9 +143,9 @@ void Neural_network_backward(NeuralNetwork *net, double *expected) {
             Neural_matrix_copy(layer_error, net->weights[i]);
             Neural_matrix_transpose(NULL, layer_error);
             Neural_matrix_multiply(
-                layer_error, 
-                last_layer_error, 
-                layer_error
+                NULL, 
+                layer_error,
+                last_layer_error
             );
             
             Neural_matrix_hadamard(NULL, layer_error, act_delta);
@@ -171,9 +154,9 @@ void Neural_network_backward(NeuralNetwork *net, double *expected) {
         // Update the bias and weight deltas
         Neural_matrix_copy(net->delta_b[i-1], layer_error);
 
-        Neural_matrix_copy(net->delta_w[i-1], layer_error);
-        Neural_matrix_transpose(NULL, net->delta_w[i-1]);
-        Neural_matrix_multiply(NULL, net->delta_w[i-1], net->active[i-1]);
+        Neural_matrix_transpose(NULL, layer_error);
+        Neural_matrix_copy(net->delta_w[i-1], net->active[i-1]);
+        Neural_matrix_multiply(NULL, net->delta_w[i-1], layer_error);
         Neural_matrix_transpose(NULL, net->delta_w[i-1]);
     }
 

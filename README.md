@@ -6,7 +6,7 @@ A lightweight, standalone C library for implementing deep feed-forward neural ne
 - Custom activation and cost functions with hyperparameters
 - A full matrix library
 
-This is simply a learning exercise hobby project.
+This is a learning exercise hobby project.
 
 # Dependencies
 
@@ -30,7 +30,7 @@ Neural_init();
 Neural_set_hyperparam_prelu(0.05);
 
 NeuralLayer structure[3] = {
-        {1, Neural_activation_identity},
+        {1, NULL}, // No previous layer to activate, so no need.
         {5, Neural_activation_prelu},
         {1, Neural_activation_identity}
 };
@@ -95,5 +95,6 @@ Read `NeuralC` source comments for more information (especially on error handlin
 # TODO
 - Fix softmax output implementation
 - Implement gradient clipping
+- Implement a runtime activation and cost function hash-table to allow custom user-written functions
 - Read and write neural networks (and matrices) to disk
 - Improve documentation
