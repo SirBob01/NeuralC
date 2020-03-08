@@ -2,7 +2,7 @@
 
 const double pi = 3.14159265358979323846;
 const int population_size = 4;
-const int batch_size = 1;
+const int batch_size = 4;
 
 int main(int argc, char **argv) {
     Neural_init();
@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
 
     // Define network structure
     NeuralLayer structure[4] = {
-        {2, Neural_activation_prelu},
+        {2, NULL},
         {5, Neural_activation_prelu},
         {5, Neural_activation_prelu},
         {1, Neural_activation_sigmoid}
@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
     // softmax_output overrides output layer activation and cost functions
     NeuralNetworkDef net_def;
     net_def.structure = structure;
-    net_def.layers = sizeof(structure) / sizeof(NeuralLayer),
+    net_def.layers = sizeof(structure) / sizeof(NeuralLayer);
     net_def.cost = Neural_cost_quadratic;
     net_def.softmax_output = Neural_false; 
 
@@ -62,34 +62,33 @@ int main(int argc, char **argv) {
     
     // Train the network 1000 times
     printf("\nTRAINING...\n");
-    
+
     NeuralTrainer trainer;
     trainer.population = pairs;
     trainer.population_size = population_size;
     trainer.batch_size = batch_size;
-    trainer.learning_rate = 0.001;
+    trainer.learning_rate = 1;
 
-    double last_error = 0;
-    for(int i = 0; i < 100000; ++i) {
+
+    for(int i = 0; i < 1000; ++i) {
         Neural_network_train(
             net, 
             trainer
         );
 
-        double error = 0;
+        double correct = 0;
         for(int i = 0; i < population_size; i++) {
             Neural_network_forward(net, test_data[i]);
-            error += net->def.cost(
+            double error = net->def.cost(
                 Neural_network_output(net)->cells[0], 
                 pairs[i]->expected[0],
                 Neural_false
             );
+            if(error <= 0.5) {
+                correct++;
+            }
         }
-        error /= population_size;
-        if(fabs(error - last_error) > 0.0000001) {
-            printf("Iteration: %d | Error: %f\n", i+1, error);
-            last_error = error;
-        }
+        printf("Iteration: %d | Accuracy: %f\n", i+1, correct/population_size);
     }
 
     // Check output of network again

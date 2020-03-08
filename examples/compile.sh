@@ -4,4 +4,4 @@ do
     COMPILE_FILES=$COMPILE_FILES$" "$i;
 done
 gcc -g xor.c -lm $COMPILE_FILES -o xor
-gcc -g sin_function.c -lm $COMPILE_FILES -o sin_function
+gcc -g sine.c -lm $COMPILE_FILES -o sine
