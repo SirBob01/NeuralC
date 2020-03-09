@@ -24,7 +24,6 @@ int main(int argc, char **argv) {
     net_def.structure = structure;
     net_def.layers = sizeof(structure) / sizeof(NeuralLayer);
     net_def.cost = Neural_cost_quadratic;
-    net_def.softmax_output = Neural_false; 
 
     NeuralNetwork *net = Neural_network(net_def);
     

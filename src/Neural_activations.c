@@ -1,6 +1,5 @@
 #include "Neural_activations.h"
 
-
 void Neural_set_hyperparam_prelu(double x) {
     HYPERPARAM_PRELU = x;
 }
@@ -9,137 +8,242 @@ void Neural_set_hyperparam_elu(double x) {
     HYPERPARAM_ELU = x;
 }
 
-double Neural_activation_linear(double x, NeuralBool derivative) {
-    if(!derivative) {
-        return x;
+void Neural_activation_linear(
+            NeuralMatrix *res, NeuralMatrix *m, NeuralBool derivative) {
+    if(res == NULL) {
+        res = m;
     }
-    else {
-        return 1.0;
-    }
-}
+    int width = m->rows * m->cols;
+    double target[width];
 
-double Neural_activation_relu(double x, NeuralBool derivative) {
-    if(!derivative) {
-        return Neural_utils_max(x, 0);
-    }
-    else {
-        if(x > 0) {
-            return 1.0;
+    for(int i = 0; i < width; i++) {
+        double x = m->cells[i];
+        if(!derivative) {
+            target[i] = x;
         }
         else {
-            return 0.0;
+            target[i] = 1.0;
         }
     }
+    Neural_matrix_resize(res, m->rows, m->cols);
+    Neural_matrix_map(res, target);
 }
 
-double Neural_activation_lrelu(double x, NeuralBool derivative) {
+void Neural_activation_relu(
+            NeuralMatrix *res, NeuralMatrix *m, NeuralBool derivative) {
+    if(res == NULL) {
+        res = m;
+    }
+    int width = m->rows * m->cols;
+    double target[width];
+
+    for(int i = 0; i < width; i++) {
+        double x = m->cells[i];
+        if(!derivative) {
+            target[i] = Neural_utils_max(x, 0);
+        }
+        else {
+            if(x > 0) {
+                target[i] = 1.0;
+            }
+            else {
+                target[i] = 0.0;
+            }
+            target[i] = 1.0;
+        }
+    }
+    Neural_matrix_resize(res, m->rows, m->cols);
+    Neural_matrix_map(res, target);
+}
+
+void Neural_activation_lrelu(
+            NeuralMatrix *res, NeuralMatrix *m, NeuralBool derivative) {
+    if(res == NULL) {
+        res = m;
+    }
+    int width = m->rows * m->cols;
+    double target[width];
     double slope = 0.01;
-    if(!derivative) {
-        return Neural_utils_max(x, slope*x);
-    }
-    else {
-        if(x > 0) {
-            return 1.0;
+
+    for(int i = 0; i < width; i++) {
+        double x = m->cells[i];
+        if(!derivative) {
+            target[i] = Neural_utils_max(x, slope*x);
         }
         else {
-            return slope;
+            if(x > 0) {
+                target[i] = 1.0;
+            }
+            else {
+                target[i] = slope;
+            }
         }
     }
+    Neural_matrix_resize(res, m->rows, m->cols);
+    Neural_matrix_map(res, target);
 }
 
-double Neural_activation_prelu(double x, NeuralBool derivative) {
-    if(!derivative) {
-        return Neural_utils_max(x, HYPERPARAM_PRELU*x);
+void Neural_activation_prelu(
+            NeuralMatrix *res, NeuralMatrix *m, NeuralBool derivative) {
+    if(res == NULL) {
+        res = m;
     }
-    else {
-        if(x > 0) {
-            return 1.0;
+    int width = m->rows * m->cols;
+    double target[width];
+
+    for(int i = 0; i < width; i++) {
+        double x = m->cells[i];
+        if(!derivative) {
+            target[i] = Neural_utils_max(x, HYPERPARAM_PRELU*x);
         }
         else {
-            return HYPERPARAM_PRELU;
+            if(x > 0) {
+                target[i] = 1.0;
+            }
+            else {
+                target[i] = HYPERPARAM_PRELU;
+            }
         }
     }
+    Neural_matrix_resize(res, m->rows, m->cols);
+    Neural_matrix_map(res, target);
 }
 
-double Neural_activation_elu(double x, NeuralBool derivative) {
-    double z = exp(x);
-    if(!derivative) {
-        if(x > 0) {
-            return x;
+void Neural_activation_elu(
+            NeuralMatrix *res, NeuralMatrix *m, NeuralBool derivative) {
+    if(res == NULL) {
+        res = m;
+    }
+    int width = m->rows * m->cols;
+    double target[width];
+
+    for(int i = 0; i < width; i++) {
+        double x = m->cells[i];
+        double z = exp(x);
+        if(!derivative) {
+            if(x > 0) {
+                target[i] = x;
+            }
+            else {
+                target[i] = HYPERPARAM_ELU*(z - 1);
+            }
         }
         else {
-            return HYPERPARAM_ELU*(z - 1);
+            if(x > 0) {
+                target[i] = 1.0;
+            }
+            else {
+                target[i] = HYPERPARAM_ELU*z;
+            }
         }
     }
-    else {
-        if(x > 0) {
-            return 1.0;
-        }
-        else {
-            return HYPERPARAM_ELU*z;
-        }
-    }
+    Neural_matrix_resize(res, m->rows, m->cols);
+    Neural_matrix_map(res, target);
 }
 
-double Neural_activation_selu(double x, NeuralBool derivative) {
+void Neural_activation_selu(
+            NeuralMatrix *res, NeuralMatrix *m, NeuralBool derivative) {
+    if(res == NULL) {
+        res = m;
+    }
+    int width = m->rows * m->cols;
+    double target[width];
     double lambda = 1.0507;
     double alpha = 1.67326;
-    double y = Neural_utils_max(x, alpha*(exp(x) - 1));
-    if(!derivative) {
-        return lambda*y;
-    }
-    else {
-        if(x >= 0) {
-            return lambda;
+
+    for(int i = 0; i < width; i++) {
+        double x = m->cells[i];
+        double exp_x = exp(x);
+        double y = Neural_utils_max(x, alpha*(exp_x - 1));
+        if(!derivative) {
+            target[i] = lambda*y;
         }
         else {
-            return lambda*alpha*exp(x);
+            if(x >= 0) {
+                target[i] = lambda;
+            }
+            else {
+                target[i] = lambda*alpha*exp_x;
+            }
         }
     }
+    Neural_matrix_resize(res, m->rows, m->cols);
+    Neural_matrix_map(res, target);
 }
 
-double Neural_activation_sigmoid(double x, NeuralBool derivative) {
-    double y = 1.0/(1.0+exp(x));
-    if(!derivative) {
-        return y;
+void Neural_activation_sigmoid(
+            NeuralMatrix *res, NeuralMatrix *m, NeuralBool derivative) {
+    if(res == NULL) {
+        res = m;
     }
-    else {
-        return y * (1 - y);
+    int width = m->rows * m->cols;
+    double target[width];
+
+    for(int i = 0; i < width; i++) {
+        double y = 1.0/(1.0+exp(m->cells[i]));
+        if(!derivative) {
+            target[i] = y;
+        }
+        else {
+            target[i] = y * (1 - y);
+        }
     }
+    Neural_matrix_resize(res, m->rows, m->cols);
+    Neural_matrix_map(res, target);
 }
 
-double Neural_activation_tanh(double x, NeuralBool derivative) {
-    double y = tanh(x);
-    if(!derivative) {
-        return y;
+void Neural_activation_tanh(
+            NeuralMatrix *res, NeuralMatrix *m, NeuralBool derivative) {
+    if(res == NULL) {
+        res = m;
     }
-    else {
-        return 1 - pow(y, 2);
+    int width = m->rows * m->cols;
+    double target[width];
+
+    for(int i = 0; i < width; i++) {
+        double y = tanh(m->cells[i]);
+        if(!derivative) {
+            target[i] = y;
+        }
+        else {
+            target[i] = 1 - pow(y, 2);
+        }
     }
+    Neural_matrix_resize(res, m->rows, m->cols);
+    Neural_matrix_map(res, target);
 }
 
-double Neural_activation_sin(double x, NeuralBool derivative) {
-    if(!derivative) {
-        return sin(x);
+void Neural_activation_sin(
+            NeuralMatrix *res, NeuralMatrix *m, NeuralBool derivative) {
+    if(res == NULL) {
+        res = m;
     }
-    else {
-        return cos(x);
+    int width = m->rows * m->cols;
+    double target[width];
+
+    for(int i = 0; i < width; i++) {
+        if(!derivative) {
+            target[i] = sin(m->cells[i]);
+        }
+        else {
+            target[i] = cos(m->cells[i]);
+        }
     }
+    Neural_matrix_resize(res, m->rows, m->cols);
+    Neural_matrix_map(res, target);
 }
 
 void Neural_activation_softmax(
-                    NeuralMatrix *res,
-                    NeuralMatrix *vector, 
-                    NeuralBool derivative) {
+            NeuralMatrix *res, NeuralMatrix *m, NeuralBool derivative) {
     if(res == NULL) {
-        res = vector;
+        res = m;
     }
-    int len = vector->rows * vector->cols;
+    int len = m->rows * m->cols;
     double target[len];
-    memcpy(target, vector->cells, len * sizeof(double));
+    memcpy(target, m->cells, len * sizeof(double));
 
     // Add a shift to each term for numerical stability
-    double max = Neural_matrix_max(vector);
+    double max = Neural_matrix_max(m);
     double sum = 0;
     for(int i = 0; i < len; i++) {
         target[i] = exp(target[i] - max);
@@ -168,6 +272,7 @@ void Neural_activation_softmax(
         Neural_matrix_destroy(jacobian);
     }
     else {
+        Neural_matrix_resize(res, m->rows, m->cols);
         Neural_matrix_map(res, target);
     }
 }

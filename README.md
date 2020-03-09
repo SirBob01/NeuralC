@@ -38,13 +38,12 @@ NeuralLayer structure[3] = {
 };
 ```
 
-4. Create a `NeuralNetworkDef` struct that defines some key properties, like the cost function. Toggling softmax normalization will override the output activation function and the cost function (cross-entropy).
+4. Create a `NeuralNetworkDef` struct that defines some key properties, like the cost function.
 ```c
 NeuralNetworkDef net_def;
 net_def.structure = structure;
 net_def.layers = sizeof(structure) / sizeof(NeuralLayer);
 net_def.cost = Neural_cost_quadratic;
-net_def.softmax_output = Neural_false;
 ```
 
 5. Generate your neural network.

@@ -14,28 +14,44 @@ void Neural_set_hyperparam_prelu(double x);
 
 void Neural_set_hyperparam_elu(double x);
 
-double Neural_activation_linear(double x, NeuralBool derivative);
+void Neural_activation_linear(
+    NeuralMatrix *res, NeuralMatrix *m, NeuralBool derivative
+);
 
-double Neural_activation_relu(double x, NeuralBool derivative);
+void Neural_activation_relu(
+    NeuralMatrix *res, NeuralMatrix *m, NeuralBool derivative
+);
 
-double Neural_activation_lrelu(double x, NeuralBool derivative);
+void Neural_activation_lrelu(
+    NeuralMatrix *res, NeuralMatrix *m, NeuralBool derivative
+);
 
-double Neural_activation_prelu(double x, NeuralBool derivative);
+void Neural_activation_prelu(
+    NeuralMatrix *res, NeuralMatrix *m, NeuralBool derivative
+);
 
-double Neural_activation_elu(double x, NeuralBool derivative);
+void Neural_activation_elu(
+    NeuralMatrix *res, NeuralMatrix *m, NeuralBool derivative
+);
 
-double Neural_activation_selu(double x, NeuralBool derivative);
+void Neural_activation_selu(
+    NeuralMatrix *res, NeuralMatrix *m, NeuralBool derivative
+);
 
-double Neural_activation_sigmoid(double x, NeuralBool derivative);
+void Neural_activation_sigmoid(
+    NeuralMatrix *res, NeuralMatrix *m, NeuralBool derivative
+);
 
-double Neural_activation_tanh(double x, NeuralBool derivative);
+void Neural_activation_tanh(
+    NeuralMatrix *res, NeuralMatrix *m, NeuralBool derivative
+);
 
-double Neural_activation_sin(double x, NeuralBool derivative);
+void Neural_activation_sin(
+    NeuralMatrix *res, NeuralMatrix *m, NeuralBool derivative
+);
 
 void Neural_activation_softmax(
-    NeuralMatrix *target,
-    NeuralMatrix *vector, 
-    NeuralBool derivative
+    NeuralMatrix *res, NeuralMatrix *m, NeuralBool derivative
 );
 
 #endif

@@ -12,7 +12,7 @@
 
 typedef struct {
     int nodes;
-    double (*activation)(double, NeuralBool);
+    void (*activation)(NeuralMatrix *, NeuralMatrix *, NeuralBool);
 } NeuralLayer;
 
 typedef struct {
@@ -20,7 +20,6 @@ typedef struct {
     int layers;
 
     double (*cost)(double, double, NeuralBool);
-    NeuralBool softmax_output;
 } NeuralNetworkDef;
 
 typedef struct {

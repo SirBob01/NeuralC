@@ -22,12 +22,10 @@ int main(int argc, char **argv) {
     };
 
     // Initialize network
-    // softmax_output overrides output layer activation and cost functions
     NeuralNetworkDef net_def;
     net_def.structure = structure;
     net_def.layers = sizeof(structure) / sizeof(NeuralLayer),
     net_def.cost = Neural_cost_quadratic;
-    net_def.softmax_output = Neural_false; 
 
     NeuralNetwork *net = Neural_network(net_def);
     
@@ -52,6 +50,7 @@ int main(int argc, char **argv) {
     
     // Error threshold for determining "correctness" based on cost-function output
     double error_threshold = 0.01;
+    double old_accuracy = 0;
     
     // How many iterations through the entire data set?
     int epochs = 5000;
@@ -74,11 +73,15 @@ int main(int argc, char **argv) {
                 correct++;
             }
         }
-        printf("Epoch: %d/%d | Accuracy: %f\n", 
-            i+1, 
-            epochs, 
-            correct/population_size
-        );
+        double accuracy = correct/population_size;
+        if(accuracy > old_accuracy) {
+            old_accuracy = accuracy;
+            printf("Epoch: %d/%d | Accuracy: %f\n", 
+                i+1, 
+                epochs, 
+                accuracy
+            );
+        }
     }
 
     // Check output of network again 
