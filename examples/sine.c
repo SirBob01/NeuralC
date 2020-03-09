@@ -1,10 +1,12 @@
 #include "../src/Neural.h"
 
+// Important constants
 const double pi = 3.14159265358979323846;
 const int population_size = 360;
 const int batch_size = 9;
 
 int main(int argc, char **argv) {
+    // Initialize NeuralC
     Neural_init();
 
     // Initialize hyperparameters
@@ -39,51 +41,48 @@ int main(int argc, char **argv) {
         pairs[j]->expected[0] = sin(pairs[j]->inputs[0]);
     }
     
-    // Define our test input data
-    double test_data[3][1] = {{(pi/6)}, 
-                              {(pi/4)}, 
-                              {(pi/3)}
-    };
-    
-    // Initial output of network
-    printf("INITIAL:\n");
-    for(int i = 0; i < 3; i++) {
-        Neural_network_forward(net, test_data[i]);
-        printf("sin(%.5f) = ", test_data[i][0]);
-        Neural_matrix_print(Neural_network_output(net));
-    }
-    
-    // Train the network 1000 times
     printf("\nTRAINING...\n");
 
+    // Define the network training meta-information
     NeuralTrainer trainer;
     trainer.population = pairs;
     trainer.population_size = population_size;
     trainer.batch_size = batch_size;
     trainer.learning_rate = 0.01;
     
-    for(int i = 0; i < 10000; ++i) {
+    // Error threshold for determining "correctness" based on cost-function output
+    double error_threshold = 0.01;
+    
+    // How many iterations through the entire data set?
+    int epochs = 5000;
+    for(int i = 0; i < epochs; ++i) {
         Neural_network_train(
             net, 
             trainer
         );
 
+        // Measure accuracy of the network
         double correct = 0;
         for(int i = 0; i < population_size; i++) {
-            Neural_network_forward(net, test_data[i]);
+            Neural_network_forward(net, pairs[i]->inputs);
             double error = net->def.cost(
                 Neural_network_output(net)->cells[0], 
                 pairs[i]->expected[0],
                 Neural_false
             );
-            if(error <= 0.5) {
+            if(error <= error_threshold) {
                 correct++;
             }
         }
-        printf("Iteration: %d | Accuracy: %f\n", i+1, correct/population_size);
+        printf("Epoch: %d/%d | Accuracy: %f\n", 
+            i+1, 
+            epochs, 
+            correct/population_size
+        );
     }
 
-    // Check output of network again
+    // Check output of network again 
+    // Plot the points on a spreadsheet or something to graphically confirm
     printf("\nFINAL:\n");
     for(int j = 0; j < population_size; j++) {
         int i = j-90;
