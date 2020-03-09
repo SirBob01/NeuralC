@@ -5,7 +5,16 @@ NeuralNetwork *Neural_network(NeuralNetworkDef def) {
     if(!net) {
         Neural_error_set(NO_NETWORK_MEMORY);
     }
-    net->def = def;
+
+    net->def.layers = def.layers;
+    net->def.cost = def.cost;
+    net->def.softmax_output = def.softmax_output;
+    net->def.structure = malloc(sizeof(NeuralLayer) * def.layers);
+    memcpy(
+        net->def.structure, 
+        def.structure,
+        def.layers * sizeof(NeuralLayer)
+    );
 
     // Allocate matrix arrays
     net->active = malloc(sizeof(NeuralMatrix *) * def.layers);
@@ -66,6 +75,7 @@ void Neural_network_destroy(NeuralNetwork *net) {
             Neural_matrix_destroy(net->delta_b[i]);
         }
     }
+    free(net->def.structure);
     free(net->active);
     free(net->input_sums);
 
