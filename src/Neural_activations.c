@@ -1,5 +1,63 @@
 #include "Neural_activations.h"
 
+void Neural_activation_init() {
+    activations = hashmap_create(100, sizeof(NeuralActivation));
+
+    // Register the library implemented activation functions
+    Neural_activation_register(
+        "linear",
+        Neural_activation_linear
+    );
+    Neural_activation_register(
+        "relu",
+        Neural_activation_relu
+    );
+    Neural_activation_register(
+        "lrelu",
+        Neural_activation_lrelu
+    );
+    Neural_activation_register(
+        "prelu",
+        Neural_activation_prelu
+    );
+    Neural_activation_register(
+        "elu",
+        Neural_activation_elu
+    );
+    Neural_activation_register(
+        "selu",
+        Neural_activation_selu
+    );
+    Neural_activation_register(
+        "sigmoid",
+        Neural_activation_sigmoid
+    );
+    Neural_activation_register(
+        "tanh",
+        Neural_activation_tanh
+    );
+    Neural_activation_register(
+        "sin",
+        Neural_activation_sin
+    );
+    Neural_activation_register(
+        "softmax",
+        Neural_activation_softmax
+    );
+}
+
+void Neural_activation_quit() {
+    hashmap_destroy(activations);
+}
+
+NeuralActivation Neural_activation_get(char id[]) {
+    return hashmap_get(activations, id)->data;
+}
+
+void Neural_activation_register(char id[], NeuralActivation func) {
+    hashmap_append(activations, id, &func);
+}
+
 void Neural_set_hyperparam_prelu(double x) {
     HYPERPARAM_PRELU = x;
 }

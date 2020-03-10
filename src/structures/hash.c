@@ -1,42 +1,47 @@
 #include "hash.h"
 
-hashmap_t *create_hashmap(int size) {
+hashmap_t *hashmap_create(int size, size_t unit) {
     hashmap_t *hashmap = (hashmap_t *)malloc(sizeof(hashmap_t));
     hashmap->buckets = (node_t **)malloc(sizeof(node_t *)*size);
     memset(hashmap->buckets, 0, sizeof(node_t *) * size);
 
+    hashmap->unit = unit;
     hashmap->size = size;
     return hashmap;
 }
 
-void destroy_hashmap(hashmap_t *hashmap) {
+void hashmap_destroy(hashmap_t *hashmap) {
     int i;
     for(i = 0; i < hashmap->size; i++) {
-        destroy_nodes(hashmap->buckets[i]);
+        nodes_destroy(hashmap->buckets[i]);
     }
     free(hashmap->buckets);
     free(hashmap);
 }
 
-void add_pair(hashmap_t *hashmap, char key[], int value) {
+void hashmap_append(hashmap_t *hashmap, char key[], void *data) {
     int hash_val = hash(key);
     int index = hash_val % hashmap->size;
     node_t *target = hashmap->buckets[index];
     if(!target) {
-        hashmap->buckets[index] = create_node(hash_val, value);
+        hashmap->buckets[index] = node_create(
+            hash_val, 
+            data, 
+            hashmap->unit
+        );
     }
     else {
-        push_node(hashmap->buckets[index], hash_val, value);
+        node_push(hashmap->buckets[index], hash_val, data);
     }
 }
 
-int get_value(hashmap_t *hashmap, char key[]) {
+node_t *hashmap_get(hashmap_t *hashmap, char key[]) {
     int hash_val = hash(key);
     int index = hash_val % hashmap->size;
     node_t *this = hashmap->buckets[index];
     while(this) {
         if(this->key == hash_val) {
-            return this->value;
+            return this;
         }
         this = this->next;
     }

@@ -2,20 +2,23 @@
 #define LIST_H
 
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct node {
     long long int key;
-    int value;
+    size_t unit; // Size of data to be stored
+
+    void *data;
     struct node *next;
 } node_t;
 
 
-node_t *create_node(long long int key, int value);
+node_t *node_create(long long int key, void *data, size_t unit);
 
-node_t *get_tail(node_t *node);
+node_t *node_get_tail(node_t *node);
 
-node_t *push_node(node_t *root, long long int key, int value);
+node_t *node_push(node_t *root, long long int key, void *data);
 
-void destroy_nodes(node_t *node);
+void nodes_destroy(node_t *node);
 
 #endif

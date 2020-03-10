@@ -9,18 +9,20 @@
 
 typedef struct {
     node_t **buckets;
+    size_t unit;
     int size;
 } hashmap_t;
 
 
-hashmap_t *create_hashmap(int size);
+hashmap_t *hashmap_create(int size, size_t unit);
 
-void destroy_hashmap(hashmap_t *hashmap);
+void hashmap_destroy(hashmap_t *hashmap);
 
-void add_pair(hashmap_t *hashmap, char key[], int value);
+void hashmap_append(hashmap_t *hashmap, char key[], void *data);
 
-int get_value(hashmap_t *hashmap, char key[]);
+node_t *hashmap_get(hashmap_t *hashmap, char key[]);
 
+// Utility function to hash a string
 long long int hash(char str[]);
 
 #endif

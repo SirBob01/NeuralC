@@ -1,14 +1,18 @@
 #include "list.h"
 
-node_t *create_node(long long int key, int value) {
+node_t *node_create(long long int key, void *data, size_t unit) {
     node_t *node = (node_t *)malloc(sizeof(node_t));
     node->key = key;
-    node->value = value;
+    node->unit = unit;
+
+    node->data = malloc(unit);
+    memcpy(node->data, data, unit);
+
     node->next = NULL;
     return node;
 }
 
-node_t *get_tail(node_t *node) {
+node_t *node_get_tail(node_t *node) {
     node_t *this = node;
     while(this) {
         this = this->next;
@@ -16,17 +20,18 @@ node_t *get_tail(node_t *node) {
     return this;
 }
 
-node_t *push_node(node_t *root, long long int key, int value) {
-    node_t *tail = get_tail(root);
-    tail->next = create_node(key, value);
+node_t *node_push(node_t *root, long long int key, void *data) {
+    node_t *tail = node_get_tail(root);
+    tail->next = node_create(key, data, tail->unit);
     return tail->next;
 }
 
-void destroy_nodes(node_t *node) {
+void nodes_destroy(node_t *node) {
     node_t *this = node;
     node_t *next;
     while(this) {
         next = this->next;
+        free(this->data);
         free(this);
         this = next;
     }

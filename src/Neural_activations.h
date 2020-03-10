@@ -5,11 +5,26 @@
 
 #include "Neural_matrix.h"
 #include "Neural_utils.h"
+#include "structures/hash.h"
+
+typedef void (*NeuralActivation)(NeuralMatrix *, NeuralMatrix *, NeuralBool);
 
 // These hyperparameters must be set before using their respective functions
 static double HYPERPARAM_PRELU;
 static double HYPERPARAM_ELU;
 
+static hashmap_t *activations;
+
+// Database of activation functions
+void Neural_activation_init();
+
+void Neural_activation_quit();
+
+void Neural_activation_register(char id[], NeuralActivation func);
+
+NeuralActivation Neural_activation_get(char id[]);
+
+// Common activation functions
 void Neural_set_hyperparam_prelu(double x);
 
 void Neural_set_hyperparam_elu(double x);
