@@ -11,6 +11,8 @@
 #include "Neural_matrix.h"
 #include "Neural_utils.h"
 #include "Neural_error.h"
+#include "structures/list.h"
+#include "structures/hash.h"
 
 void Neural_init(void);
 
