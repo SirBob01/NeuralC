@@ -33,8 +33,8 @@ Neural_set_hyperparam_prelu(0.05);
 
 NeuralLayer structure[3] = {
         {1, NULL}, // No previous layer to activate, so no need.
-        {5, Neural_activation_prelu},
-        {1, Neural_activation_identity}
+        {5, "prelu"},
+        {1, "sigmoid"}
 };
 ```
 
