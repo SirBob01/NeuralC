@@ -19,7 +19,7 @@ void hashmap_destroy(hashmap_t *hashmap) {
     free(hashmap);
 }
 
-void hashmap_append(hashmap_t *hashmap, char key[], void *data) {
+void hashmap_append(hashmap_t *hashmap, const char *key, void *data) {
     int hash_val = hash(key);
     int index = hash_val % hashmap->size;
     node_t *target = hashmap->buckets[index];
@@ -35,7 +35,7 @@ void hashmap_append(hashmap_t *hashmap, char key[], void *data) {
     }
 }
 
-node_t *hashmap_get(hashmap_t *hashmap, char key[]) {
+node_t *hashmap_get(hashmap_t *hashmap, const char *key) {
     int hash_val = hash(key);
     int index = hash_val % hashmap->size;
     node_t *this = hashmap->buckets[index];
@@ -45,10 +45,10 @@ node_t *hashmap_get(hashmap_t *hashmap, char key[]) {
         }
         this = this->next;
     }
-    exit(EXIT_FAILURE); // Key does not exist
+    return NULL;
 }
 
-long long int hash(char str[]) {
+long long int hash(const char *str) {
     long long int hash = 0;
     long long int m = pow(10, 9) + 9;
     long long int p_pow = 1;

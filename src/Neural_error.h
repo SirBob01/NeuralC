@@ -13,6 +13,9 @@
 
 typedef enum {
     SUCCESS,
+    
+    INVALID_ACTIVATION_FUNCTION,
+
     NO_NETWORK_MEMORY,
     NO_MATRIX_MEMORY,
 

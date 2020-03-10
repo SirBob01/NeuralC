@@ -12,7 +12,7 @@
 
 typedef struct {
     int nodes;
-    void (*activation)(NeuralMatrix *, NeuralMatrix *, NeuralBool);
+    const char *activation_id;
 } NeuralLayer;
 
 typedef struct {
@@ -23,7 +23,10 @@ typedef struct {
 } NeuralNetworkDef;
 
 typedef struct {
-    NeuralNetworkDef def;
+    NeuralActivation *activations;
+    int layers;
+
+    double (*cost)(double, double, NeuralBool);
 
     NeuralMatrix **active;
     NeuralMatrix **input_sums;

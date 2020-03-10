@@ -13,9 +13,9 @@ int main(int argc, char **argv) {
     // Define network structure
     NeuralLayer structure[4] = {
         {2, NULL},
-        {5, Neural_activation_prelu},
-        {5, Neural_activation_prelu},
-        {1, Neural_activation_sigmoid}
+        {5, "prelu"},
+        {5, "prelu"},
+        {1, "sigmoid"}
     };
 
     // Initialize network
@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
         double correct = 0;
         for(int i = 0; i < population_size; i++) {
             Neural_network_forward(net, test_data[i]);
-            double error = net->def.cost(
+            double error = net->cost(
                 Neural_network_output(net)->cells[0], 
                 pairs[i]->expected[0],
                 Neural_false

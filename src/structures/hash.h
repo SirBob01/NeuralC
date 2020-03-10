@@ -18,11 +18,11 @@ hashmap_t *hashmap_create(int size, size_t unit);
 
 void hashmap_destroy(hashmap_t *hashmap);
 
-void hashmap_append(hashmap_t *hashmap, char key[], void *data);
+void hashmap_append(hashmap_t *hashmap, const char *key, void *data);
 
-node_t *hashmap_get(hashmap_t *hashmap, char key[]);
+node_t *hashmap_get(hashmap_t *hashmap, const char *key);
 
 // Utility function to hash a string
-long long int hash(char str[]);
+long long int hash(const char *str);
 
 #endif

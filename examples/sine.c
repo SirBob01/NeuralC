@@ -15,10 +15,10 @@ int main(int argc, char **argv) {
     // Define network structure
     NeuralLayer structure[5] = {
         {1, NULL},
-        {10, Neural_activation_prelu},
-        {10, Neural_activation_prelu},
-        {10, Neural_activation_prelu},
-        {1, Neural_activation_tanh}
+        {10, "prelu"},
+        {10, "prelu"},
+        {10, "prelu"},
+        {1, "tanh"}
     };
 
     // Initialize network
@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
     trainer.learning_rate = 0.01;
     
     // Error threshold for determining "correctness" based on cost-function output
-    double error_threshold = 0.01;
+    double error_threshold = 0.005;
     double old_accuracy = 0;
     
     // How many iterations through the entire data set?
@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
         double correct = 0;
         for(int i = 0; i < population_size; i++) {
             Neural_network_forward(net, pairs[i]->inputs);
-            double error = net->def.cost(
+            double error = net->cost(
                 Neural_network_output(net)->cells[0], 
                 pairs[i]->expected[0],
                 Neural_false
