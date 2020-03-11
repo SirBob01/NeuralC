@@ -94,8 +94,7 @@ Neural_quit();
 Read `NeuralC` source comments for more information (especially on error handling and logging). View the examples for other features.
 
 # TODO
-- Fix softmax output implementation
 - Implement gradient clipping
-- Implement a runtime activation and cost function hash-table to allow custom user-written functions
+- Implement a runtime cost function hash-table to allow custom user-written functions
 - Read and write neural networks (and matrices) to disk
 - Improve documentation
