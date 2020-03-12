@@ -1,7 +1,7 @@
 #include "list.h"
 
 node_t *node_create(long long int key, void *data, size_t unit) {
-    node_t *node = (node_t *)malloc(sizeof(node_t));
+    node_t *node = malloc(sizeof(node_t));
     node->key = key;
     node->unit = unit;
 
@@ -14,7 +14,7 @@ node_t *node_create(long long int key, void *data, size_t unit) {
 
 node_t *node_get_tail(node_t *node) {
     node_t *this = node;
-    while(this) {
+    while(this->next) {
         this = this->next;
     }
     return this;

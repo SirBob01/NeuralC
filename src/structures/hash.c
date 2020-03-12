@@ -1,8 +1,8 @@
 #include "hash.h"
 
 hashmap_t *hashmap_create(int size, size_t unit) {
-    hashmap_t *hashmap = (hashmap_t *)malloc(sizeof(hashmap_t));
-    hashmap->buckets = (node_t **)malloc(sizeof(node_t *)*size);
+    hashmap_t *hashmap = malloc(sizeof(hashmap_t));
+    hashmap->buckets = malloc(sizeof(node_t *) * size);
     memset(hashmap->buckets, 0, sizeof(node_t *) * size);
 
     hashmap->unit = unit;
