@@ -1,7 +1,7 @@
 #include "Neural_activations.h"
 
 void Neural_activation_init() {
-    activations = hashmap_create(100, sizeof(NeuralActivation));
+    activations = hashmap_create(64, sizeof(NeuralActivation));
 
     // Register the library implemented activation functions
     Neural_activation_register("linear", Neural_activation_linear);

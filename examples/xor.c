@@ -1,6 +1,5 @@
 #include "../src/Neural.h"
 
-const double pi = 3.14159265358979323846;
 const int population_size = 4;
 const int batch_size = 4;
 
@@ -23,7 +22,7 @@ int main(int argc, char **argv) {
     NeuralNetworkDef net_def;
     net_def.structure = structure;
     net_def.layers = sizeof(structure) / sizeof(NeuralLayer);
-    net_def.cost = Neural_cost_quadratic;
+    net_def.cost_function = "quadratic";
 
     NeuralNetwork *net = Neural_network(net_def);
     
@@ -39,22 +38,23 @@ int main(int argc, char **argv) {
 
     for(int i = 0; i < population_size; i++) {
         pairs[i] = Neural_datapair(2, 1);
-
-        // Set value map input -> expected
-        memcpy(pairs[i]->inputs, test_data[i], sizeof(double) * 2);
-        pairs[i]->expected[0] = (double)(
+        double expected = (double)(
             (unsigned)test_data[i][0] ^ (unsigned)test_data[i][1]
         );
+
+        // Set value map input -> expected
+        Neural_matrix_map(pairs[i]->inputs, test_data[i]);
+        Neural_matrix_map(pairs[i]->expected, &expected);
         printf("%.5f ^ %.5f = %.5f\n", 
-            pairs[i]->inputs[0], pairs[i]->inputs[1],
-            pairs[i]->expected[0]
+            pairs[i]->inputs->cells[0], pairs[i]->inputs->cells[1],
+            pairs[i]->expected->cells[0]
         );
     }
     
     // Initial output of network
     printf("INITIAL:\n");
     for(int i = 0; i < population_size; i++) {
-        Neural_network_forward(net, test_data[i]);
+        Neural_network_forward(net, pairs[i]->inputs);
         printf("xor(%.5f %.5f) = ", test_data[i][0], test_data[i][1]);
         Neural_matrix_print(Neural_network_output(net));
     }
@@ -68,32 +68,14 @@ int main(int argc, char **argv) {
     trainer.batch_size = batch_size;
     trainer.learning_rate = 1;
 
-
     for(int i = 0; i < 1000; ++i) {
-        Neural_network_train(
-            net, 
-            trainer
-        );
-
-        double correct = 0;
-        for(int i = 0; i < population_size; i++) {
-            Neural_network_forward(net, test_data[i]);
-            double error = net->cost(
-                Neural_network_output(net)->cells[0], 
-                pairs[i]->expected[0],
-                Neural_false
-            );
-            if(error <= 0.5) {
-                correct++;
-            }
-        }
-        printf("Iteration: %d | Accuracy: %f\n", i+1, correct/population_size);
+        Neural_network_train(net, trainer);
     }
 
     // Check output of network again
     printf("\nFINAL:\n");
     for(int i = 0; i < population_size; i++) {
-        Neural_network_forward(net, test_data[i]);
+        Neural_network_forward(net, pairs[i]->inputs);
         printf("xor(%.5f %.5f) = ", test_data[i][0], test_data[i][1]);
         Neural_matrix_print(Neural_network_output(net));
     }

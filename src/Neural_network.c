@@ -7,7 +7,7 @@ NeuralNetwork *Neural_network(NeuralNetworkDef def) {
     }
 
     net->layers = def.layers;
-    net->cost = def.cost;
+    net->cost = Neural_cost_get(def.cost_function);
     net->activations = malloc(sizeof(NeuralActivation) * net->layers);
     for(int i = 1; i < net->layers; i++) {
         net->activations[i] = Neural_activation_get(
@@ -25,6 +25,7 @@ NeuralNetwork *Neural_network(NeuralNetworkDef def) {
     net->delta_w = malloc(sizeof(NeuralMatrix *) * (def.layers-1));
     net->delta_b = malloc(sizeof(NeuralMatrix *) * (def.layers-1));
 
+    // Sanity check
     if(!net->activations || 
        !net->input_sums || !net->active || 
        !net->weights || !net->delta_w || 
@@ -91,8 +92,8 @@ NeuralMatrix *Neural_network_output(NeuralNetwork *net) {
     return net->active[net->layers-1];
 }
 
-void Neural_network_forward(NeuralNetwork *net, double *inputs) {
-    Neural_matrix_map(net->active[0], inputs);
+void Neural_network_forward(NeuralNetwork *net, NeuralMatrix *inputs) {
+    Neural_matrix_copy(net->active[0], inputs);
 
     // z(n) = a(n-1)*w(n, n-1) + b(n)
     // a(n) = activation(z(n))
@@ -112,7 +113,7 @@ void Neural_network_forward(NeuralNetwork *net, double *inputs) {
     }
 }
 
-void Neural_network_backward(NeuralNetwork *net, double *expected) {
+void Neural_network_backward(NeuralNetwork *net, NeuralMatrix *expected) {
     NeuralMatrix *output = Neural_network_output(net);
     NeuralMatrix *act_delta = Neural_matrix(NULL, 1, 1);
     NeuralMatrix *layer_error = Neural_matrix(NULL, 1, 1);
@@ -120,14 +121,7 @@ void Neural_network_backward(NeuralNetwork *net, double *expected) {
     int last_layer = net->layers-1;
 
     // Error gradient vector
-    for(int i = 0; i < output_error->rows; i++) {
-        output_error->cells[i] = net->cost(
-            output->cells[i],
-            expected[i], 
-            Neural_true
-        );
-    }
-    
+    net->cost(output_error, output, expected, Neural_true);
     for(int i = last_layer; i > 0; i--) {
         // Calculate activation delta
         net->activations[i](

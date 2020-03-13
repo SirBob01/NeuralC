@@ -10,9 +10,11 @@ void Neural_init(void) {
     srand(time(NULL));
     Neural_error_init();
     Neural_activation_init();
+    Neural_cost_init();
 }
 
 void Neural_quit(void) {
     Neural_error_quit();
     Neural_activation_quit();
+    Neural_cost_quit();
 }

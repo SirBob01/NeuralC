@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
     NeuralNetworkDef net_def;
     net_def.structure = structure;
     net_def.layers = sizeof(structure) / sizeof(NeuralLayer),
-    net_def.cost = Neural_cost_quadratic;
+    net_def.cost_function = "quadratic";
 
     NeuralNetwork *net = Neural_network(net_def);
     
@@ -34,9 +34,11 @@ int main(int argc, char **argv) {
     for(int j = 0; j < population_size; j++) {
         pairs[j] = Neural_datapair(1, 1);
 
-        // Set value map input -> expected
-        pairs[j]->inputs[0] = j*pi/180;
-        pairs[j]->expected[0] = sin(pairs[j]->inputs[0]);
+        double x = j * pi/180;
+        double y = sin(x);
+
+        Neural_matrix_map(pairs[j]->inputs, &x);
+        Neural_matrix_map(pairs[j]->expected, &y);
     }
     
     printf("\nTRAINING...\n");
@@ -51,6 +53,11 @@ int main(int argc, char **argv) {
     // Error threshold for determining "correctness" based on cost-function output
     double error_threshold = 0.005;
     double old_accuracy = 0;
+
+    // Store the error values
+    NeuralMatrix *error_vector = Neural_matrix(
+        NULL, 1, Neural_network_output(net)->cols
+    );
     
     // How many iterations through the entire data set?
     int epochs = 5000;
@@ -64,12 +71,13 @@ int main(int argc, char **argv) {
         double correct = 0;
         for(int i = 0; i < population_size; i++) {
             Neural_network_forward(net, pairs[i]->inputs);
-            double error = net->cost(
-                Neural_network_output(net)->cells[0], 
-                pairs[i]->expected[0],
+            net->cost(
+                error_vector,
+                Neural_network_output(net), 
+                pairs[i]->expected,
                 Neural_false
             );
-            if(error <= error_threshold) {
+            if(error_vector->cells[0] <= error_threshold) {
                 correct++;
             }
         }
@@ -92,9 +100,9 @@ int main(int argc, char **argv) {
         Neural_network_forward(net, pairs[j]->inputs);
         NeuralMatrix *output = Neural_network_output(net);
         printf("sin(%.5f) = %.5f | Correct: %.5f\n", 
-            pairs[j]->inputs[0],
+            pairs[j]->inputs->cells[0],
             output->cells[0],
-            pairs[j]->expected[0]
+            pairs[j]->expected->cells[0]
         );
     }
 
@@ -103,6 +111,7 @@ int main(int argc, char **argv) {
         Neural_datapair_destroy(pairs[i]);
     }
     Neural_network_destroy(net);
+    Neural_matrix_destroy(error_vector);
     Neural_quit();
 
     return 0;

@@ -6,6 +6,7 @@
 
 #include "Neural_matrix.h"
 #include "Neural_activations.h"
+#include "Neural_costs.h"
 #include "Neural_datapair.h"
 #include "Neural_utils.h"
 #include "Neural_error.h"
@@ -18,15 +19,13 @@ typedef struct {
 typedef struct {
     NeuralLayer *structure;
     int layers;
-
-    double (*cost)(double, double, NeuralBool);
+    const char *cost_function;
 } NeuralNetworkDef;
 
 typedef struct {
-    NeuralActivation *activations;
     int layers;
-
-    double (*cost)(double, double, NeuralBool);
+    NeuralCost cost;
+    NeuralActivation *activations;
 
     NeuralMatrix **active;
     NeuralMatrix **input_sums;
@@ -54,9 +53,9 @@ void Neural_network_destroy(NeuralNetwork *net);
 
 NeuralMatrix *Neural_network_output(NeuralNetwork *net);
 
-void Neural_network_forward(NeuralNetwork *net, double *inputs);
+void Neural_network_forward(NeuralNetwork *net, NeuralMatrix *inputs);
 
-void Neural_network_backward(NeuralNetwork *net, double *expected);
+void Neural_network_backward(NeuralNetwork *net, NeuralMatrix *expected);
 
 void Neural_network_train(NeuralNetwork *net, NeuralTrainer trainer);
 

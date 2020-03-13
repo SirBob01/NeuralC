@@ -43,7 +43,7 @@ NeuralLayer structure[3] = {
 NeuralNetworkDef net_def;
 net_def.structure = structure;
 net_def.layers = sizeof(structure) / sizeof(NeuralLayer);
-net_def.cost = Neural_cost_quadratic;
+net_def.cost_function = "quadratic";
 ```
 
 5. Generate your neural network.
@@ -58,7 +58,7 @@ NeuralDataPair *pair[population];
 for(int i = 0; i < population; i++) {
     pair[i] = Neural_datapair(1, 1); // 1 input, 1 output
 
-    // Set the datapair's input and expected output arrays
+    // Set the datapair's input and expected output vectors
 }
 ```
 
@@ -95,6 +95,5 @@ Read `NeuralC` source comments for more information (especially on error handlin
 
 # TODO
 - Implement gradient clipping
-- Implement a runtime cost function hash-table to allow custom user-written functions
 - Read and write neural networks (and matrices) to disk
 - Improve documentation

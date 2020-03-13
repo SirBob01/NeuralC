@@ -51,6 +51,12 @@ char *Neural_error_get(void) {
                 "Invalid activation function key!"
             );
             break;
+        case INVALID_COST_FUNCTION:
+            strcpy(
+                _Neural_Error_Message,
+                "Invalid cost function key!"
+            );
+            break;
         case NO_MATRIX_MEMORY:
             strcpy(
                 _Neural_Error_Message, 

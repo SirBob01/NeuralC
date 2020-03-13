@@ -6,8 +6,10 @@
 #include "Neural_matrix.h"
 #include "Neural_utils.h"
 #include "structures/hash.h"
+#include "structures/list.h"
 
 typedef void (*NeuralActivation)(NeuralMatrix *, NeuralMatrix *, NeuralBool);
+
 static hashmap_t *activations;
 
 // These hyperparameters must be set before using their respective functions

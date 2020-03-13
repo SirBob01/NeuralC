@@ -3,12 +3,11 @@
 
 #include <stdlib.h>
 
-typedef struct {
-    double *inputs;
-    double *expected;
+#include "Neural_matrix.h"
 
-    int len_inputs;
-    int len_expected;
+typedef struct {
+    NeuralMatrix *inputs;
+    NeuralMatrix *expected;
 } NeuralDataPair;
 
 

@@ -1,17 +1,14 @@
 #include "Neural_datapair.h"
 
-NeuralDataPair *Neural_datapair(int len_inputs, int len_expected) {
+NeuralDataPair *Neural_datapair(int inputs, int outputs) {
     NeuralDataPair *pair = malloc(sizeof(NeuralDataPair));
-    pair->len_inputs = len_inputs;
-    pair->len_expected = len_expected;
-
-    pair->inputs = calloc(pair->len_inputs, sizeof(double));
-    pair->expected = calloc(pair->len_expected, sizeof(double));
+    pair->inputs = Neural_matrix(NULL, inputs, 1);
+    pair->expected = Neural_matrix(NULL, outputs, 1);
     return pair;
 }
 
 void Neural_datapair_destroy(NeuralDataPair *pair) {
-    free(pair->inputs);
-    free(pair->expected);
+    Neural_matrix_destroy(pair->inputs);
+    Neural_matrix_destroy(pair->expected);
     free(pair);
 }
