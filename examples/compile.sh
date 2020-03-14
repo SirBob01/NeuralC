@@ -1,9 +1,5 @@
 COMPILE_FILES="";
-for i in ../src/*.c;
-do
-    COMPILE_FILES=$COMPILE_FILES$" "$i;
-done
-for i in ../src/structures/*.c;
+for i in "$(find ../src -name '*.c')";
 do
     COMPILE_FILES=$COMPILE_FILES$" "$i;
 done
