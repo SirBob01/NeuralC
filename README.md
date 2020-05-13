@@ -1,6 +1,8 @@
 <img src="./media/logo.png" alt="NeuralC" width="500"/>
 
-A lightweight, standalone C library for implementing deep feed-forward neural networks (DFF). It features:
+---
+
+`NeuralC` is a lightweight, standalone C library for implementing deep feed-forward neural networks (DFF). It features:
 
 - Generalized backpropagation algorithm
 - Custom activation and cost functions with hyperparameters
@@ -10,11 +12,11 @@ This is a learning exercise hobby project. Here is a visualization of the exampl
 
 <img src="./media/sin_approx.png" alt="Sine Function" width="500"/>
 
-# Dependencies
+## Dependencies
 
 None.
 
-# Basic Usage
+## Basic Usage
 
 1. Include the `Neural.h` header.
 ```c
@@ -93,7 +95,13 @@ Neural_quit();
 
 Read `NeuralC` source comments for more information (especially on error handling and logging). View the examples for other features.
 
-# TODO
+## TODO
 - Implement gradient clipping
 - Read and write neural networks (and matrices) to disk
 - Improve documentation
+
+## License
+
+Code and documentation Copyright (c) 2019-2020 Keith Leonardo
+
+Code released under the [BSD 3 License](https://choosealicense.com/licenses/bsd-3-clause/).
