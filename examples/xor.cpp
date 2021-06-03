@@ -28,4 +28,5 @@ int main() {
         }
         output.print();
     }
+    return 0;
 }
