@@ -13,7 +13,7 @@ This is a learning exercise hobby project. Here is a visualization of the exampl
 
 ## Dependencies
 
-None.
+This requires the GNU CBLAS library for fast matrix multiplications.
 
 ## Basic Usage
 
