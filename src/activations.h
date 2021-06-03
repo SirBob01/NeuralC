@@ -9,7 +9,12 @@ namespace neural {
         double slope = 0.05;
         double y = std::max(x, slope * x);
         if(derivative) {
-            return y / x;
+            if(x == 0) {
+                return 1.0;
+            }
+            else {
+                return y / x;
+            }
         }
         else {
             return y;
