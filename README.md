@@ -2,10 +2,9 @@
 
 ---
 
-`NeuralC` is a lightweight, standalone C library for implementing deep feed-forward neural networks (DFF). It features:
+`NeuralC` is a lightweight, standalone C++ library for implementing deep feed-forward neural networks (DFF). It features:
 
 - Generalized backpropagation algorithm
-- Custom activation and cost functions with hyperparameters
 - A full matrix library
 
 This is a learning exercise hobby project. Here is a visualization of the example sine approximator.
@@ -18,90 +17,73 @@ None.
 
 ## Basic Usage
 
-1. Include the `Neural.h` header.
-```c
-#include <Neural.h>
+1. Include the `neural.h` header.
+```c++
+#include <neural.h>
 ```
 
-2. Initialize the library's subsystems.
-```c
-Neural_init();
-```
-
-3. Create the structure of your network using an array of `NeuralLayers`, indicating the number of nodes per layer and their activation functions. Don't forget to set the hyperparameters of special activation functions like `Neural_activation_prelu`.
-```c
-// Initialize hyperparameters
-Neural_set_hyperparam_prelu(0.05);
-
-NeuralLayer structure[3] = {
-        {1, NULL}, // No previous layer to activate, so no need.
-        {5, "prelu"},
-        {1, "sigmoid"}
+2. Create a `NetworkParameters` struct that defines some key hyperparameters of the network, like the cost function and the individual layers. Each layer is defined by the number of nodes and its activation function.
+```c++
+neural::NetworkParameters params;
+params.learning_rate = 1.0;
+params.gradient_clip = 1.5;
+params.cost_function = neural::quadratic_cost;
+params.layers = {
+    {2, nullptr},
+    {2, neural::lrelu},
+    {1, neural::sigmoid},
 };
 ```
 
-4. Create a `NeuralNetworkDef` struct that defines some key properties, like the cost function.
-```c
-NeuralNetworkDef net_def;
-net_def.structure = structure;
-net_def.layers = sizeof(structure) / sizeof(NeuralLayer);
-net_def.cost_function = "quadratic";
-```
-
 5. Generate your neural network.
-```c
-NeuralNetwork *net = Neural_network(net_def);
+```c++
+neural::Network network(params);
 ```
 
-6. Load your dataset into an array of `NeuralDataPair` structures {input, desired output}.
-```c
-int population = 100; // 100 training examples
-NeuralDataPair *pair[population];
-for(int i = 0; i < population; i++) {
-    pair[i] = Neural_datapair(1, 1); // 1 input, 1 output
-
-    // Set the datapair's input and expected output vectors
-}
+6. Load your dataset into a vector of `DataSample` structures {input, desired output}.
+```c++
+std::vector<neural::DataSample> examples = {
+    {{1.0, 0.0}, {1.0}},
+    {{0.0, 1.0}, {1.0}},
+    {{0.0, 0.0}, {0.0}},
+    {{1.0, 1.0}, {0.0}},
+};
 ```
 
-7. Create a `NeuralTrainer` struct that defines how the network should be trained. Note that the population must be divisible by the batch size.
-```c
-NeuralTrainer trainer;
-trainer.population = pairs;
-trainer.population_size = population;
-trainer.batch_size = population / 10;
-trainer.learning_rate = 0.001;
-```
-
-8. Train your network.
-```c
+7. Train your network.
+```c++
 int epochs = 1000;
 for(int i = 0; i < epochs; i++) {
-    Neural_network_train(net, trainer);
+    network.fit(examples);
 }
 ```
 
-9. Free all allocated memory and close subsystems.
-```c
-// Clean-up
-for(int i = 0; i < population; i++) {
-    Neural_datapair_destroy(pairs[i]);
+8. Display the output of the network by evaluating some input.
+```c++
+for(auto &ex : examples) {
+    neural::Matrix output = network.forward(ex.input);
+    for(auto &val : ex.input) {
+        std::cout << int(val) << " ";
+    }
+    output.print();
 }
-Neural_network_destroy(net);
-
-// Uninitialize all subsystems
-Neural_quit();
 ```
 
-Read `NeuralC` source comments for more information (especially on error handling and logging). View the examples for other features.
+9. Save the network to disk.
+```c++
+network.save("xor.net");
+```
+
+A saved neural network binary file can also be loaded from disk by calling `network.load("network_file.net")`. This assumes that the network stored on disk follows the same structure as the one it is loaded into.
+
+Read `NeuralC` source comments for more information. View the examples for other features.
 
 ## TODO
-- Implement gradient clipping
-- Read and write neural networks (and matrices) to disk
-- Improve documentation
+- Reimplement hyperparameters for activation and cost functions
+- Implement more activation and cost functions, including those involving vector operations
 
 ## License
 
-Code and documentation Copyright (c) 2019-2020 Keith Leonardo
+Code and documentation Copyright (c) 2019-2021 Keith Leonardo
 
 Code released under the [BSD 3 License](https://choosealicense.com/licenses/bsd-3-clause/).
